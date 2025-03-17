@@ -1,0 +1,12 @@
+[
+    {
+        "Id" : "1",
+        "customerTypeName" : "Loại thường",
+        "status" : "0"
+    },
+    {
+        "Id" : "2",
+        "customerTypeName" : "Loại VIP",
+        "status" : "1"
+    }
+]

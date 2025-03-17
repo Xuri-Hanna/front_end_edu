@@ -1,11 +1,13 @@
 <script setup lang="ts" generic="TData, TValue">
 import type { ColumnDef } from '@tanstack/vue-table'
+import { Input } from '../input';
 import {
   FlexRender,
   getCoreRowModel,
   useVueTable,
+  getFilteredRowModel,
 } from "@tanstack/vue-table"
-
+import { valueUpdater } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -17,17 +19,31 @@ import {
 
 const props = defineProps<{
   columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  data: TData[],
+  search?: string
 }>()
-
+const emit = defineEmits(['onRowClick'])
+const onRowClick = () => {
+  emit("onRowClick",)
+}
+const rowSelection = ref({})
 const table = useVueTable({
   get data() { return props.data },
   get columns() { return props.columns },
   getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
+  onRowSelectionChange: updaterOrValue => valueUpdater(updaterOrValue, rowSelection)
 })
 </script>
 
 <template>
+  <Input
+        v-if="search"
+        class="max-w-lg my-2"
+        :placeholder="'Tìm kiếm qua ' + columns.filter(x => x.accessorKey === search)[0].header.toLowerCase()"
+        :model-value="table.getColumn(search)?.getFilterValue() as string"
+        @update:model-value=" table.getColumn(search)?.setFilterValue($event)"
+      />
   <div class="border rounded-md">
     <Table>
       <TableHeader>

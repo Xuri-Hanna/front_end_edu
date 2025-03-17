@@ -46,10 +46,130 @@ const router = createRouter({
         },
         {
           path: 'user',
-          name: 'user_index',
-          component: () => import('@/views/dashboard/examples/user/Index.vue'),
+          name: 'user',
+          component: () => import('@/views/dashboard/examples/system/User.vue'),
           meta: {
             title: 'User',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'role',
+          name: 'role',
+          component: () => import('@/views/dashboard/examples/system/Role.vue'),
+          meta: {
+            title: 'Role',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'authorize',
+          name: 'authorize',
+          component: () => import('@/views/dashboard/examples/system/Authorize.vue'),
+          meta: {
+            title: 'Authorize',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'customer_type',
+          name: 'customerType',
+          component: () => import('@/views/dashboard/examples/category/CustomerType.vue'),
+          meta: {
+            title: 'Customer Type',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'service_type',
+          name: 'serviceType',
+          component: () => import('@/views/dashboard/examples/category/ServiceType.vue'),
+          meta: {
+            title: 'Service Type',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'discount',
+          name: 'discount',
+          component: () => import('@/views/dashboard/examples/customer/Discount.vue'),
+          meta: {
+            title: 'Discount',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'vps',
+          name: 'vps',
+          component: () => import('@/views/dashboard/examples/customer/VPS.vue'),
+          meta: {
+            title: 'VPS',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'domain',
+          name: 'domain',
+          component: () => import('@/views/dashboard/examples/customer/Domain.vue'),
+          meta: {
+            title: 'Domain',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'hosting',
+          name: 'hosting',
+          component: () => import('@/views/dashboard/examples/customer/Hosting.vue'),
+          meta: {
+            title: 'Hosting',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'customer',
+          name: 'Customer',
+          component: () => import('@/views/dashboard/examples/customer/Customer.vue'),
+          meta: {
+            title: 'Customer',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'receipt',
+          name: 'Receipt',
+          component: () => import('@/views/dashboard/examples/customer/Receipt.vue'),
+          meta: {
+            title: 'Receipt',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'response',
+          name: 'Response',
+          component: () => import('@/views/dashboard/examples/customer/Response.vue'),
+          meta: {
+            title: 'Response',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'payment',
+          name: 'Payment',
+          component: () => import('@/views/dashboard/examples/customer/Payment.vue'),
+          meta: {
+            title: 'Payment',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'cart',
+          name: 'Cart',
+          component: () => import('@/views/dashboard/examples/customer/Cart.vue'),
+          meta: {
+            title: 'Cart',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'cart/:id',
+          name: 'CartDetail',
+          component: () => import('@/views/dashboard/examples/customer/CartDetail.vue'),
+          meta: {
+            title: 'CartDetail',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'service',
+          name: 'service',
+          component: () => import('@/views/dashboard/examples/customer/Service.vue'),
+          meta: {
+            title: 'Service',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -73,8 +193,8 @@ const router = createRouter({
   ]
 });
 
-router.beforeEach((loc) => {
-  document.title = loc.meta.title as string;
+router.beforeEach((to,from) => {
+  document.title = to.meta.title as string;
 })
 
 export default router

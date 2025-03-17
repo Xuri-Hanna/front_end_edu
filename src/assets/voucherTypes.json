@@ -1,0 +1,12 @@
+[
+    {
+        "voucherTypeId" : "1",
+        "voucherTypeName" : "Giảm 50%",
+        "status" : "1"
+    },
+    {
+        "voucherTypeId" : "2",
+        "voucherTypeName" : "Giảm 20%",
+        "status" : "0"
+    }
+]

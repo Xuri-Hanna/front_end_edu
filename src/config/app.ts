@@ -1,44 +1,118 @@
-interface IDashboardMenus {
-  title: string
-  icon: string
-  path: string
-  description?: string
-  hidden?: boolean
+
+interface Menu {
+  name: string
+  hidden?: boolean,
+  icon : string
+  children : SubMenu[]
+}
+interface SubMenu {
+  title : string,
+  icon : string,
+  path : string
+  description? : string
+
 }
 
 export const SIDEBAR_EXPAND_WIDTH = 280;
 export const SIDEBAR_COLLAPSED_WIDTH = 72;
-export const APP_MENU: Record<string, { name: string, routes: IDashboardMenus[] }> = {
-  main: {
-    name: 'Core',
-    routes: [
+export const APP_MENU: Record<string,Menu> = {
+  system: {
+    name: 'Hệ thống',
+    icon: 'Home',
+    children: [
       {
-        title: 'Dashboard',
-        icon: 'LayoutDashboard',
-        path: 'home',
+        title: 'Người dùng',
+        icon: 'User',
+        path: 'user',
       },
       {
-        title: 'Tasks',
-        icon: 'ClipboardCheck',
-        path: 'task',
-        description: 'Manage Tasks'
+        title: 'Quyền',
+        icon: 'UserPlus',
+        path: 'role',
       },
+      {
+        title: 'Phân Quyền',
+        icon: 'UserCog',
+        path: 'authorize',
+      },
+      
     ],
   },
-  settings: {
-    name: 'General',
-    routes: [
+  category: {
+    name: 'Danh mục',
+    icon: 'AlignStartVertical',
+    children: [
       {
-        path: 'user',
-        title: 'User',
+        title: 'Loại khách hàng',
         icon: 'Users',
-        description: 'Manage User'
+        path: 'customer_type',
       },
       {
-        path: 'settings',
-        title: 'Settings',
-        icon: 'Settings2',
-        description: 'Settings'
+        title: 'Loại dịch vụ',
+        icon: 'CircleDollarSign',
+        path: 'service_type',
+      },
+      {
+        title: 'Loại khuyến mại',
+        icon: 'Ticket',
+        path: 'voucher_type',
+      },
+      
+    ],
+  },
+  management: {
+    name: 'Quản lý',
+    icon: 'AppWindow',
+    children: [
+      {
+        title: 'Khách hàng',
+        icon: 'BookUser',
+        path: 'customer',
+      },
+      {
+        title: 'Hóa đơn',
+        icon: 'ReceiptText',
+        path: 'receipt',
+      },
+      {
+        title: 'Phản hồi',
+        icon: 'MessageCircleReply',
+        path: 'response',
+      },
+      {
+        title: 'Thanh toán',
+        icon: 'BadgeCent',
+        path: 'payment',
+      },
+      {
+        title: 'Dịch vụ',
+        icon: 'Package',
+        path: 'service',
+      },
+      {
+        title: 'Giỏ hàng',
+        icon: 'ShoppingCart',
+        path: 'cart',
+      },
+      {
+        title: 'Mã giảm giá',
+        icon: 'Ticket',
+        path: 'discount',
+      },
+      {
+        title: 'VPS',
+        icon: 'Waypoints',
+        path: 'vps',
+      },
+      {
+        title: 'Hosting',
+        icon: 'Computer',
+        path: 'hosting',
+      },
+      {
+        title: 'Miền',
+        icon: 'MemoryStick',
+        path: 'domain',
       },
     ],
   },

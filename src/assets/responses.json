@@ -1,0 +1,32 @@
+[
+    {
+        "responseId" : "1",
+        "customer" : {
+            "customerId" : "1",
+            "customerType" : {
+                "customerTypeId" : "2",
+                "customerTypeName" : "Loại VIP",
+                "status" : "1"
+            },
+            "status" : "0",
+            "phoneNumber": "0373750960",
+            "fullName" : "Lê Hoàng Tuấn",
+            "email" : "lehoangtuan783@gmail.com"
+        },
+        "service" : {
+            "serviceId" : "1",
+            "serviceName" : "Dịch vụ 1",
+            "description" : "Rat la tot",
+            "price" : "Gia",
+            "serviceType" : {
+                "serviceTypeId" : "3",
+                "serviceTypeName" : "Application",
+                "status" : "1"
+            },
+            "status" : "1"
+        },
+        "rate" : 4,
+        "comment" : "Tot",
+        "date" : "25/2/2025"
+    }
+]

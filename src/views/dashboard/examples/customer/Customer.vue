@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
-import data from '@/assets/tasks.json';
+import data from '@/assets/customers.json';
 import { ref, h } from 'vue';
-import DataTableHeader from '@/components/ui/data-table/DataTableHeader.vue';
-import type { Column } from '@tanstack/vue-table';
 import { Badge } from '@/components/ui/badge';
 import {Input} from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
+
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -35,21 +33,22 @@ const tagVariants: status[] = [
 
 
 const tasks = ref(data);
-const columns: ColumnDef<PAYLOAD>[] = [
+const columns: ColumnDef<any>[] = [
   
   {
-    accessorKey: 'nvId',
-    header: 'Mã nhân viên',
+    accessorKey: 'Id',
+    header: 'khách hàng',
     enableSorting: false,
+  },
+  {
+    accessorKey: 'customerType',
+    header: 'Loại khách hàng',
+    enableSorting: false,
+    cell: ({row}) => row.original.customerType.customerTypeName
   },
   {
     accessorKey: 'fullName',
-    header: 'Họ tên',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'role',
-    header: 'Chức vụ',
+    header: 'Tên khách hàng',
     enableSorting: false,
   },
   {
@@ -58,8 +57,8 @@ const columns: ColumnDef<PAYLOAD>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'email',
-    header: 'Email',
+    accessorKey: 'fullName',
+    header: 'Tên khách hàng',
     enableSorting: false,
   },
   {
@@ -77,20 +76,34 @@ const columns: ColumnDef<PAYLOAD>[] = [
     ])
   },
   {
-    id: 'actions',
+    accessorKey: 'action',
+    header: 'Hành động',
+    enableSorting: false,
+    cell: ({ row }) => h('div', {
+      class: 'max-w-[500px] truncate flex items-center',
+    }, [
+      h(Button, {
+        variant: "outline",
+        class: 'mr-2',
+      }, () => "Sửa" ),
+      h(Button, {
+        variant: "destructive",
+      }, () => "Xóa" ),
+      
+    ])
   },
 ];
 interface PAYLOAD {
-  nvId : string,
-  role : string | undefined,
+  Id : string | number,
+  customerTypeId : string | undefined ,
   status : string | undefined,
-  phoneNumber : string,
-  fullName : string,
-  email : string
+  phoneNumber : string ,
+  fullName : string ,
+  email : string 
 }
 const form = ref<PAYLOAD>({
-  nvId : "",
-  role : undefined,
+  Id : "",
+  customerTypeId : undefined,
   status : undefined,
   phoneNumber : "",
   fullName : "",
@@ -103,26 +116,41 @@ const onSubmit = () => {
 
 <template>
   <div>
-    <page-header title="Tasks"></page-header>
+    <page-header title="Quản lí khách hàng"></page-header>
     <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
       <div class="grid gap-y-2">
-        <Label for="nvId">Mã nhân viên</Label>
-        <Input type="text" id="nvId" placeholder="Mã nhân viên" v-model="form.nvId"/>
+        <Label for="customerId">Mã khách hàng</Label>
+        <Input type="text" id="customerId" placeholder="Tên khách hàng" v-model="form.Id"/>
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.role">
-          <Label for="role">Chức vụ</Label>
+        <Select v-model="form.status">
+          <Label for="customerTypeName">Loại khách hàng</Label>
           <SelectTrigger>
-            <SelectValue placeholder="Chọn chức vụ" />
+            <SelectValue placeholder="Chọn loại khách hàng" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               <SelectItem value="1">
-                Giám đốc
+                Loại VIP
+              </SelectItem>
+              <SelectItem value="2">
+                Loại thường
               </SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
+      </div>
+      <div class="grid gap-y-2">
+        <Label for="fullName">Tên khách hàng</Label>
+        <Input type="text" id="fullName" placeholder="Tên khách hàng" v-model="form.fullName"/>
+      </div>
+      <div class="grid gap-y-2">
+        <Label for="phoneNumber">Số điện thoại</Label>
+        <Input type="text" id="phoneNumber" placeholder="Số điện thoại" v-model="form.phoneNumber"/>
+      </div>
+      <div class="grid gap-y-2">
+        <Label for="email">Email</Label>
+        <Input type="text" id="email" placeholder="Email" v-model="form.email"/>
       </div>
       <div class="grid gap-y-2">
         <Select v-model="form.status">
@@ -142,20 +170,8 @@ const onSubmit = () => {
           </SelectContent>
         </Select>
       </div>
-      <div class="grid gap-y-2">
-        <Label for="phoneNumber">Số điện thoại</Label>
-        <Input type="number" id="phoneNumber" placeholder="Mã nhân viên" v-model="form.phoneNumber"/>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="fullName">Họ tên</Label>
-        <Input type="number" id="fullName" placeholder="Mã nhân viên" v-model="form.fullName"/>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="email">Email</Label>
-        <Input type="email" id="email" placeholder="Email" v-model="form.email"/>
-      </div>
-      <Button type="submit">Tìm kiếm</Button>
+      <Button type="submit">Thêm khách hàng</Button>
     </form>
-    <DataTable :columns="columns" :data="tasks"></DataTable>
+    <DataTable :columns="columns" :data="tasks" search="fullName"></DataTable>
   </div>
 </template>

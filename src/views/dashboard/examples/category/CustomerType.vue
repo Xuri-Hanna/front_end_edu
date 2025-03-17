@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
-import data from '@/assets/tasks.json';
+import data from '@/assets/customerTypes.json';
 import { ref, h } from 'vue';
-import DataTableHeader from '@/components/ui/data-table/DataTableHeader.vue';
-import type { Column } from '@tanstack/vue-table';
 import { Badge } from '@/components/ui/badge';
 import {Input} from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
+
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -38,28 +36,13 @@ const tasks = ref(data);
 const columns: ColumnDef<PAYLOAD>[] = [
   
   {
-    accessorKey: 'nvId',
-    header: 'Mã nhân viên',
+    accessorKey: 'customerTypeId',
+    header: 'Mã loại khách hàng',
     enableSorting: false,
   },
   {
-    accessorKey: 'fullName',
-    header: 'Họ tên',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'role',
-    header: 'Chức vụ',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'phoneNumber',
-    header: 'Số điện thoại',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email',
+    accessorKey: 'customerTypeName',
+    header: 'Tên loại khách hàng',
     enableSorting: false,
   },
   {
@@ -77,24 +60,32 @@ const columns: ColumnDef<PAYLOAD>[] = [
     ])
   },
   {
-    id: 'actions',
+    accessorKey: 'action',
+    header: 'Hành động',
+    enableSorting: false,
+    cell: ({ row }) => h('div', {
+      class: 'max-w-[500px] truncate flex items-center',
+    }, [
+      h(Button, {
+        variant: "outline",
+        class: 'mr-2',
+      }, () => "Sửa" ),
+      h(Button, {
+        variant: "destructive",
+      }, () => "Xóa" ),
+      
+    ])
   },
 ];
 interface PAYLOAD {
-  nvId : string,
-  role : string | undefined,
+  customerTypeId : string | number,
+  customerTypeName : string | number,
   status : string | undefined,
-  phoneNumber : string,
-  fullName : string,
-  email : string
 }
 const form = ref<PAYLOAD>({
-  nvId : "",
-  role : undefined,
+  customerTypeId : "",
+  customerTypeName : "",
   status : undefined,
-  phoneNumber : "",
-  fullName : "",
-  email : ""
 })
 const onSubmit = () => {
   
@@ -103,26 +94,15 @@ const onSubmit = () => {
 
 <template>
   <div>
-    <page-header title="Tasks"></page-header>
+    <page-header title="Phân loại khách hàng"></page-header>
     <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
       <div class="grid gap-y-2">
-        <Label for="nvId">Mã nhân viên</Label>
-        <Input type="text" id="nvId" placeholder="Mã nhân viên" v-model="form.nvId"/>
+        <Label for="customerTypeId">Mã loại khách hàng</Label>
+        <Input type="text" id="customerTypeId" placeholder="Mã loại khách hàng" v-model="form.customerTypeId"/>
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.role">
-          <Label for="role">Chức vụ</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn chức vụ" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                Giám đốc
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="customerTypeName">Tên loại khách hàng</Label>
+        <Input type="text" id="customerTypeName" placeholder="Tên loại khách hàng" v-model="form.customerTypeName"/>
       </div>
       <div class="grid gap-y-2">
         <Select v-model="form.status">
@@ -142,20 +122,9 @@ const onSubmit = () => {
           </SelectContent>
         </Select>
       </div>
-      <div class="grid gap-y-2">
-        <Label for="phoneNumber">Số điện thoại</Label>
-        <Input type="number" id="phoneNumber" placeholder="Mã nhân viên" v-model="form.phoneNumber"/>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="fullName">Họ tên</Label>
-        <Input type="number" id="fullName" placeholder="Mã nhân viên" v-model="form.fullName"/>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="email">Email</Label>
-        <Input type="email" id="email" placeholder="Email" v-model="form.email"/>
-      </div>
-      <Button type="submit">Tìm kiếm</Button>
+      <div></div>
+      <Button type="submit">Thêm loại khách hàng</Button>
     </form>
-    <DataTable :columns="columns" :data="tasks"></DataTable>
+    <DataTable :columns="columns" :data="tasks" search="customerTypeName"></DataTable>
   </div>
 </template>

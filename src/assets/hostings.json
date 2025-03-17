@@ -1,0 +1,47 @@
+[
+    {
+        "Id" : "1",
+        "customer" : {
+            "Id" : "1",
+            "customerType" : {
+                "Id" : "2",
+                "customerTypeName" : "Loại VIP",
+                "status" : "1"
+            },
+            "status" : "0",
+            "phoneNumber": "0373750960",
+            "fullName" : "Lê Hoàng Tuấn",
+            "email" : "lehoangtuan783@gmail.com"
+        },
+        "domain" : {
+            "Id" : "1",
+            "customer" : {
+                "customerId" : "1",
+                "customerType" : {
+                    "Id" : "2",
+                    "customerTypeName" : "Loại VIP",
+                    "status" : "1"
+                },
+                "status" : "0",
+                "phoneNumber": "0373750960",
+                "fullName" : "Lê Hoàng Tuấn",
+                "email" : "lehoangtuan783@gmail.com"
+            },
+            "domainName" : "1",
+            "register" : "",
+            "expireDate" : "",
+            "status" : "0",
+            "createdAt" : "23/2/2025",
+            "updatedAt" : "23/2/2025"
+        },
+        "plan" : "1",
+        "diskspace" : "1",
+        "bandwidth" : "1",
+        "accountFtp" : "1",
+        "addonDomains" : "1",
+        "subDomains" : "1",
+        "status" : "0",
+        "createdAt" : "16/03/2025",
+        "updatedAt" : "16/03/2025"
+    }
+]

@@ -1,0 +1,17 @@
+[
+    {
+        "serviceTypeId" : "1",
+        "serviceTypeName" : "Website",
+        "status" : "0"
+    },
+    {
+        "serviceTypeId" : "2",
+        "serviceTypeName" : "Host",
+        "status" : "1"
+    },
+    {
+        "serviceTypeId" : "3",
+        "serviceTypeName" : "Application",
+        "status" : "1"
+    }
+]

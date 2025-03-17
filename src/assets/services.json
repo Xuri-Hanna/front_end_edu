@@ -1,0 +1,14 @@
+[
+    {
+        "Id" : "1",
+        "serviceName" : "Dịch vụ 1",
+        "description" : "Rat la tot",
+        "price" : "Gia",
+        "serviceType" : {
+            "serviceTypeId" : "3",
+            "serviceTypeName" : "Application",
+            "status" : "1"
+        },
+        "status" : "1"
+    }
+]

@@ -17,7 +17,7 @@ const handleFocus = (e: FocusEvent & { isFocused: boolean }) => {
 }
 
 const mappedMenu = Object.entries(APP_MENU).flatMap(([key, value]) => {
-  return value.routes.map((r) => ({
+  return value.children.map((r) => ({
     ...r,
     section: value.name,
     key: `${key}-${r.path}`,

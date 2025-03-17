@@ -9,6 +9,7 @@ const props = defineProps<{
   prependIcon?: string
   placeholder?: string
   class?: HTMLAttributes['class'],
+  type?: string | "text" 
 }>()
 
 const emits = defineEmits<{
@@ -49,6 +50,7 @@ const onKeydown = (e: KeyboardEvent) => {
       @focus="onFocus"
       @blur="onBlur"
       @keydown="onKeydown"
+      :type="type"
     >
   </div>
 </template>

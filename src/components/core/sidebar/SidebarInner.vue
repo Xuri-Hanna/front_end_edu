@@ -14,13 +14,20 @@ import { useRoute } from 'vue-router';
 import { APP_MENU } from '@/config/app';
 import { ArrowLeftToLine } from 'lucide-vue-next';
 import { useAppStore } from '@/stores/app';
-
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import Icon from '@/components/ui/Icon.vue';
 const route = useRoute()
 
 const menus = computed(() => Object.entries(APP_MENU).map(([key, value]) => ({
+
     key,
     name: value.name,
-    routes: value.routes.map((r) => ({
+    icon : value.icon,
+    routes: value.children.map((r) => ({
       ...r,
       active: `/dashboard/${r.path}` === route.path,
     })),
@@ -28,7 +35,14 @@ const menus = computed(() => Object.entries(APP_MENU).map(([key, value]) => ({
 ));
 
 const handleNavigate = (path: string) => {
-  router.push(path);
+  if(route.fullPath.includes(`/cart/${route.params.id}`)){
+    router.push(route.fullPath.replace(`/cart/${route.params.id}`,"") + `/${path}`);
+  }
+  else{
+    router.push(path);
+  }
+  console.log(path);
+  
   if (window.innerWidth < 1025) {
     store.toggleSidebar();
   }
@@ -49,8 +63,8 @@ const toggleSidebar = () => {
           <div class="px-4 h-[64px] flex fixed z-10 items-center justify-between border-b-[1px]" :style="{ width: `${store.sidebarExpanded ? 280 : 64}px` }">
             <transition name="fade">
               <h2 v-show="store.sidebarExpanded" class="text-2xl font-semibold flex items-center">
-                <span class="text-foreground"><span class="mr-2 flex items-center"><Icon name="Boxes" /></span></span>
-                Dashcn
+                <span class="text-foreground "><span class="mr-2 flex items-center"><Icon name="Boxes" /></span></span>
+                ABSolTech
               </h2>
             </transition>
             <Button
@@ -65,31 +79,46 @@ const toggleSidebar = () => {
         </div>
         <ScrollArea style="height: calc(100vh - 64px)">
           <div v-for="menu in menus" :key="menu.key" class="border-b-[1px] transition-all" :class="store.sidebarExpanded ? 'p-4' : 'p-2'">
-            <p
-              v-show="store.sidebarExpanded"
-              class="uppercase text-xs font-light text-gray-400 mb-2 tracking-widest transition-all duration-300 delay-100"
-              :class="store.sidebarExpanded ? 'visible opacity-100' : 'invisible opacity-0'"
-            >
-              {{ menu.name }}
-            </p>
-            <ul>
-              <li v-for="child in menu.routes" :key="`${menu.key}-${child.path}`" class="flex items-center mb-1 rounded-md">
+            <Collapsible>
+              <CollapsibleTrigger class="w-full">
+                <Toggle
+                  class="w-full overflow-x-hidden justify-start duration-150"
+                  :pressed="false"
+                >
+                <span class="flex items-center" :class="store.sidebarExpanded ? 'mr-4' : 'm-0'" >
+                  <Icon :name="menu.icon" />
+                </span>
+                <p
+                v-show="store.sidebarExpanded"
+                class="uppercase text-xs font-light text-gray-400 mb-2 tracking-widest transition-all duration-300 delay-100"
+                :class="store.sidebarExpanded ? 'visible opacity-100' : 'invisible opacity-0'"
+                >
+                {{ menu.name }}
+                </p>
+                
+                </Toggle>
+              </CollapsibleTrigger>
+            <CollapsibleContent class="mt-2">
+              <ul>
+                <li v-for="child in menu.routes" :key="`${menu.key}-${child.path}`" class="flex items-center mb-1 rounded-md">
                 <TooltipProvider :disable-hoverable-content="true">
                   <Tooltip :delay-duration="0">
                     <TooltipTrigger class="w-full">
-                      <Toggle
+                        <Toggle
                         class="w-full overflow-x-hidden justify-start duration-150"
                         :pressed="child.active"
                         @click="handleNavigate(child.path)"
                       >
-                        <span class="flex items-center" :class="store.sidebarExpanded ? 'mr-4' : 'm-0'">
-                          <Icon :name="child.icon" />
-                        </span>
+                      <span class="flex items-center" :class="store.sidebarExpanded ? 'mr-4' : 'm-0'">
+                        <Icon :name="child.icon" />
+                      </span>
                         <transition name="fade" :duration="300">
                           <span v-show="store.sidebarExpand">{{ child.title }}</span>
                         </transition>
                       </Toggle>
+          
                     </TooltipTrigger>
+                    
                     <template v-if="!store.sidebarExpanded">
                       <TooltipContent side="right">
                         <p class="text-sm">{{ child.title }}</p>
@@ -99,6 +128,8 @@ const toggleSidebar = () => {
                 </TooltipProvider>
               </li>
             </ul>
+            </CollapsibleContent>
+            </Collapsible>
           </div>
           <div class="border-b-[1px] transition-all" :class="store.sidebarExpanded ? 'p-4' : 'p-2'">
             <p
