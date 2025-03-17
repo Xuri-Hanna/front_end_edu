@@ -1,13 +1,13 @@
 <script setup lang="ts" generic="TData, TValue">
 import type { ColumnDef } from '@tanstack/vue-table'
 import { Input } from '../input';
+import {ref} from 'vue'
 import {
   FlexRender,
   getCoreRowModel,
   useVueTable,
   getFilteredRowModel,
 } from "@tanstack/vue-table"
-import { valueUpdater } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -22,17 +22,12 @@ const props = defineProps<{
   data: TData[],
   search?: string
 }>()
-const emit = defineEmits(['onRowClick'])
-const onRowClick = () => {
-  emit("onRowClick",)
-}
 const rowSelection = ref({})
 const table = useVueTable({
   get data() { return props.data },
   get columns() { return props.columns },
   getCoreRowModel: getCoreRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
-  onRowSelectionChange: updaterOrValue => valueUpdater(updaterOrValue, rowSelection)
 })
 </script>
 
@@ -47,7 +42,7 @@ const table = useVueTable({
   <div class="border rounded-md">
     <Table>
       <TableHeader>
-        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id" >
           <TableHead v-for="header in headerGroup.headers" :key="header.id">
             <FlexRender
               v-if="!header.isPlaceholder"

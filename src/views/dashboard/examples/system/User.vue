@@ -113,6 +113,17 @@ const form = ref<PAYLOAD>({
 const onSubmit = () => {
   
 }
+const clearData = () => {
+  editMode.value = false;
+  form.value = {
+    Id : undefined,
+    role : undefined,
+    status : undefined,
+    phoneNumber : "",
+    fullName : "",
+    email : ""
+  }
+}
 const editMode = ref(false);
 </script>
 
@@ -171,7 +182,7 @@ const editMode = ref(false);
       </div>
       <Button type="submit" class="col-span-2" v-if="!editMode">Thêm người dùng</Button>
       <Button type="submit" v-if="editMode">Sửa người dùng</Button>
-      <Button type="submit" @click="editMode = false" v-if="editMode">Hủy</Button>
+      <Button type="submit" @click="clearData()" v-if="editMode">Hủy</Button>
     </form>
     <DataTable :columns="columns" :data="tasks" search="email"></DataTable>
   </div>

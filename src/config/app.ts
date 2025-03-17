@@ -116,6 +116,18 @@ export const APP_MENU: Record<string,Menu> = {
       },
     ],
   },
+  account: {
+    name: 'Tài khoản',
+    icon: 'UserCog',
+    children: [
+      {
+        title: 'Tài khoản hosting',
+        icon: 'BetweenHorizontalEnd',
+        path: 'account-hosting'
+      },
+      
+    ]
+  }
 };
 
 export const globalSearch = {
