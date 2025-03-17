@@ -38,67 +38,10 @@ export const APP_MENU: Record<string,Menu> = {
       
     ],
   },
-  category: {
-    name: 'Danh mục',
-    icon: 'AlignStartVertical',
+  service: {
+    name: 'Dịch vụ',
+    icon: 'Package',
     children: [
-      {
-        title: 'Loại khách hàng',
-        icon: 'Users',
-        path: 'customer_type',
-      },
-      {
-        title: 'Loại dịch vụ',
-        icon: 'CircleDollarSign',
-        path: 'service_type',
-      },
-      {
-        title: 'Loại khuyến mại',
-        icon: 'Ticket',
-        path: 'voucher_type',
-      },
-      
-    ],
-  },
-  management: {
-    name: 'Quản lý',
-    icon: 'AppWindow',
-    children: [
-      {
-        title: 'Khách hàng',
-        icon: 'BookUser',
-        path: 'customer',
-      },
-      {
-        title: 'Hóa đơn',
-        icon: 'ReceiptText',
-        path: 'receipt',
-      },
-      {
-        title: 'Phản hồi',
-        icon: 'MessageCircleReply',
-        path: 'response',
-      },
-      {
-        title: 'Thanh toán',
-        icon: 'BadgeCent',
-        path: 'payment',
-      },
-      {
-        title: 'Dịch vụ',
-        icon: 'Package',
-        path: 'service',
-      },
-      {
-        title: 'Giỏ hàng',
-        icon: 'ShoppingCart',
-        path: 'cart',
-      },
-      {
-        title: 'Mã giảm giá',
-        icon: 'Ticket',
-        path: 'discount',
-      },
       {
         title: 'VPS',
         icon: 'Waypoints',
@@ -114,6 +57,22 @@ export const APP_MENU: Record<string,Menu> = {
         icon: 'MemoryStick',
         path: 'domain',
       },
+    ]
+  },
+  management: {
+    name: 'Quản lý',
+    icon: 'AppWindow',
+    children: [
+      {
+        title: 'Khách hàng',
+        icon: 'BookUser',
+        path: 'customer',
+      },
+      {
+        title: 'Hóa đơn',
+        icon: 'ReceiptText',
+        path: 'receipt',
+      },
     ],
   },
   account: {
@@ -125,7 +84,17 @@ export const APP_MENU: Record<string,Menu> = {
         icon: 'BetweenHorizontalEnd',
         path: 'account-hosting'
       },
-      
+      {
+        title: 'Tài khoản domain',
+        icon: 'BetweenHorizontalEnd',
+        path: 'account-domain'
+      },
+      {
+        title: 'Tài khoản vps',
+        icon: 'BetweenHorizontalEnd',
+        path: 'account-vps'
+      },
+
     ]
   }
 };

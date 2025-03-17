@@ -87,7 +87,7 @@ const router = createRouter({
         {
           path: 'discount',
           name: 'discount',
-          component: () => import('@/views/dashboard/examples/customer/Discount.vue'),
+          component: () => import('@/views/dashboard/examples/management/Discount.vue'),
           meta: {
             title: 'Discount',
           } as RouteMeta & IRouteMeta
@@ -95,7 +95,7 @@ const router = createRouter({
         {
           path: 'vps',
           name: 'vps',
-          component: () => import('@/views/dashboard/examples/customer/VPS.vue'),
+          component: () => import('@/views/dashboard/examples/service/Vps.vue'),
           meta: {
             title: 'VPS',
           } as RouteMeta & IRouteMeta
@@ -103,7 +103,7 @@ const router = createRouter({
         {
           path: 'domain',
           name: 'domain',
-          component: () => import('@/views/dashboard/examples/customer/Domain.vue'),
+          component: () => import('@/views/dashboard/examples/service/Domain.vue'),
           meta: {
             title: 'Domain',
           } as RouteMeta & IRouteMeta
@@ -111,15 +111,39 @@ const router = createRouter({
         {
           path: 'hosting',
           name: 'hosting',
-          component: () => import('@/views/dashboard/examples/customer/Hosting.vue'),
+          component: () => import('@/views/dashboard/examples/service/Hosting.vue'),
           meta: {
             title: 'Hosting',
           } as RouteMeta & IRouteMeta
         },
         {
+          path: 'account-vps',
+          name: 'accountVps',
+          component: () => import('@/views/dashboard/examples/account/VpsAccount.vue'),
+          meta: {
+            title: 'AccountVps',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'account-domain',
+          name: 'accountDomain',
+          component: () => import('@/views/dashboard/examples/account/DomainAccount.vue'),
+          meta: {
+            title: 'AccountDomain',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'account-hosting',
+          name: 'accountHosting',
+          component: () => import('@/views/dashboard/examples/account/HostingAccount.vue'),
+          meta: {
+            title: 'AccountHosting',
+          } as RouteMeta & IRouteMeta
+        },
+        {
           path: 'customer',
           name: 'Customer',
-          component: () => import('@/views/dashboard/examples/customer/Customer.vue'),
+          component: () => import('@/views/dashboard/examples/management/Customer.vue'),
           meta: {
             title: 'Customer',
           } as RouteMeta & IRouteMeta
@@ -127,7 +151,7 @@ const router = createRouter({
         {
           path: 'receipt',
           name: 'Receipt',
-          component: () => import('@/views/dashboard/examples/customer/Receipt.vue'),
+          component: () => import('@/views/dashboard/examples/management/Receipt.vue'),
           meta: {
             title: 'Receipt',
           } as RouteMeta & IRouteMeta
@@ -135,7 +159,7 @@ const router = createRouter({
         {
           path: 'response',
           name: 'Response',
-          component: () => import('@/views/dashboard/examples/customer/Response.vue'),
+          component: () => import('@/views/dashboard/examples/management/Response.vue'),
           meta: {
             title: 'Response',
           } as RouteMeta & IRouteMeta
@@ -143,7 +167,7 @@ const router = createRouter({
         {
           path: 'payment',
           name: 'Payment',
-          component: () => import('@/views/dashboard/examples/customer/Payment.vue'),
+          component: () => import('@/views/dashboard/examples/management/Payment.vue'),
           meta: {
             title: 'Payment',
           } as RouteMeta & IRouteMeta
@@ -151,7 +175,7 @@ const router = createRouter({
         {
           path: 'cart',
           name: 'Cart',
-          component: () => import('@/views/dashboard/examples/customer/Cart.vue'),
+          component: () => import('@/views/dashboard/examples/management/Cart.vue'),
           meta: {
             title: 'Cart',
           } as RouteMeta & IRouteMeta
@@ -159,7 +183,7 @@ const router = createRouter({
         {
           path: 'cart/:id',
           name: 'CartDetail',
-          component: () => import('@/views/dashboard/examples/customer/CartDetail.vue'),
+          component: () => import('@/views/dashboard/examples/management/CartDetail.vue'),
           meta: {
             title: 'CartDetail',
           } as RouteMeta & IRouteMeta
@@ -167,7 +191,7 @@ const router = createRouter({
         {
           path: 'service',
           name: 'service',
-          component: () => import('@/views/dashboard/examples/customer/Service.vue'),
+          component: () => import('@/views/dashboard/examples/management/Service.vue'),
           meta: {
             title: 'Service',
           } as RouteMeta & IRouteMeta
