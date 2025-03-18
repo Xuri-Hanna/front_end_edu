@@ -78,7 +78,7 @@ export const APP_MENU: Record<string,Menu> = {
       },
       {
         title: 'Hợp đồng',
-        icon: 'Contact',
+        icon: 'Signature',
         path: 'contract',
       },
     ],
