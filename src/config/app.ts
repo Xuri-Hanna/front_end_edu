@@ -2,20 +2,20 @@
 interface Menu {
   name: string
   hidden?: boolean,
-  icon : string
-  children : SubMenu[]
+  icon: string
+  children: SubMenu[]
 }
 interface SubMenu {
-  title : string,
-  icon : string,
-  path : string
-  description? : string
+  title: string,
+  icon: string,
+  path: string
+  description?: string
 
 }
 
 export const SIDEBAR_EXPAND_WIDTH = 280;
 export const SIDEBAR_COLLAPSED_WIDTH = 72;
-export const APP_MENU: Record<string,Menu> = {
+export const APP_MENU: Record<string, Menu> = {
   system: {
     name: 'Hệ thống',
     icon: 'Home',
@@ -35,7 +35,7 @@ export const APP_MENU: Record<string,Menu> = {
         icon: 'UserCog',
         path: 'authorize',
       },
-      
+
     ],
   },
   service: {
@@ -59,22 +59,6 @@ export const APP_MENU: Record<string,Menu> = {
       },
     ]
   },
-  management: {
-    name: 'Quản lý',
-    icon: 'AppWindow',
-    children: [
-      {
-        title: 'Khách hàng',
-        icon: 'BookUser',
-        path: 'customer',
-      },
-      {
-        title: 'Hóa đơn',
-        icon: 'ReceiptText',
-        path: 'receipt',
-      },
-    ],
-  },
   account: {
     name: 'Tài khoản',
     icon: 'UserCog',
@@ -96,7 +80,38 @@ export const APP_MENU: Record<string,Menu> = {
       },
 
     ]
-  }
+  },
+  management: {
+    name: 'Quản lý',
+    icon: 'AppWindow',
+    children: [
+      {
+        title: 'Khách hàng',
+        icon: 'BookUser',
+        path: 'customer',
+      },
+      {
+        title: 'Hóa đơn',
+        icon: 'ReceiptText',
+        path: 'receipt',
+      },
+      {
+        title: 'Đơn hàng',
+        icon: 'ReceiptText',
+        path: 'order',
+      },
+      {
+        title: 'Hợp đồng',
+        icon: 'ReceiptText',
+        path: 'contract ',
+      },
+      {
+        title: 'Hóa đơn',
+        icon: 'ReceiptText',
+        path: 'receipt',
+      },
+    ],
+  },
 };
 
 export const globalSearch = {

@@ -1,182 +1,136 @@
 <script setup lang="ts">
+import { ref, onMounted, h } from 'vue';
+import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
-import data from '@/assets/domainAccounts.json';
-import { ref, h } from 'vue';
-import {Input} from '@/components/ui/input';
-import Label from '@/components/ui/label/Label.vue';
+import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import {
-  DateFormatter,
-  type DateValue,
-  getLocalTimeZone,
-} from '@internationalized/date'
-import { cn } from '@/lib/utils'
-import { CalendarIcon } from 'lucide-vue-next'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-interface status {
-  tag : string,
-  title : string
-}
-const df = new DateFormatter('en-US', {
-  dateStyle: 'long',
-})
-const tagVariants: status[] = [
-  {
-      tag : 'success',
-      title : 'Kích hoạt'
-  },
-  {
-      tag : 'warning',
-      title : 'Khóa'
-  },
-]
 
+// Danh sách tài khoản domain
+const domainAccounts = ref([]);
+const domainProducts = ref([]);
 
-const tasks = ref(data);
+// Định nghĩa cột cho bảng hiển thị
 const columns: ColumnDef<any>[] = [
+  { accessorKey: 'id', header: 'Mã tài khoản' },
   {
-    accessorKey: 'Id',
-    header: 'Mã tài khoản domain',
-    enableSorting: false,
+    accessorKey: 'domain_id',
+    header: 'Tên Domain',
+    cell: ({ row }) => {
+      // Tìm hosting tương ứng trong danh sách hostingProducts
+      const domain = domainProducts.value.find(h => h.id === row.original.domain_id);
+      return domain ? domain.domain_name : 'Không xác định'; // Nếu không tìm thấy, hiển thị 'Không xác định'
+    }
   },
+  { accessorKey: 'registrar_panel', header: 'Bảng điều khiển' },
+  { accessorKey: 'username', header: 'Tên đăng nhập' },
+  { accessorKey: 'password', header: 'Mật khẩu' },
   {
-    accessorKey: 'domainId',
-    header: 'Mã domain',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'registerPanel',
-    header: 'Register panel',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'username',
-    header: 'Tên người dùng',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'createdAt',
-    header: 'Ngày lập',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'updatedAt',
-    header: 'Ngày cập nhật',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'action',
+    accessorKey: 'actions',
     header: 'Hành động',
-    enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'max-w-[500px] truncate flex items-center',
-    }, [
-      h(Button, {
-        variant: "outline",
-        class: 'mr-2',
-      }, () => "Sửa" ),
-      h(Button, {
-        variant: "destructive",
-      }, () => "Xóa" ),
-      
-    ])
-  },
+    cell: ({ row }) =>
+      h('div', {}, [
+        h(Button, { variant: 'outline', onClick: () => editAccount(row.original) }, 'Sửa'),
+        h(Button, { variant: 'destructive', onClick: () => deleteAccount(row.original.id) }, 'Xóa')
+      ])
+  }
 ];
-interface PAYLOAD {
-  Id :string | number,
-  domainId : string | undefined,
-  registerPanel : string | undefined,
-  username : string | undefined,
-  password : string | undefined,
-  createdAt : any,
-  updatedAt : any,
-}
-const form = ref<PAYLOAD>({
-  Id : "",
-  domainId : "",  
-  registerPanel : "",
-  username : "",
-  password : "",
-  createdAt : "",
-  updatedAt : "",
-  
-})
-const onSubmit = () => {
-  
-}
+
+// Định nghĩa dữ liệu form
+const form = ref({
+  domain_id: '',
+  registrar_panel: '',
+  username: '',
+  password: ''
+});
+
+// Lấy danh sách domain products
+const fetchDomainProducts = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/domain_products');
+    domainProducts.value = response.data;
+    console.log(response.data);
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách domain:', error);
+  }
+};
+
+// Lấy danh sách domain accounts từ API
+const fetchDomainAccounts = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/domain_accounts');
+    domainAccounts.value = response.data;
+    console.log(response.data);
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách domain account:', error);
+  }
+};
+
+// Thêm mới hoặc cập nhật domain account
+const submitForm = async () => {
+  try {
+    if (form.value.id) {
+      await axios.put(`http://127.0.0.1:8000/api/domain_accounts/${form.value.id}`, form.value);
+    } else {
+      await axios.post('http://127.0.0.1:8000/api/domain_accounts', form.value);
+    }
+    form.value = { domain_id: '', registrar_panel: '', username: '', password: '' };
+    fetchDomainAccounts();
+  } catch (error) {
+    console.error('Lỗi khi lưu domain account:', error);
+  }
+};
+
+// Chỉnh sửa tài khoản domain
+const editAccount = (account) => {
+  form.value = { ...account };
+};
+
+// Xóa tài khoản domain
+const deleteAccount = async (id) => {
+  try {
+    await axios.delete(`http://127.0.0.1:8000/api/domain_accounts/${id}`);
+    fetchDomainAccounts();
+  } catch (error) {
+    console.error('Lỗi khi xóa domain account:', error);
+  }
+};
+
+onMounted(async () => {
+  await fetchDomainProducts();
+  await fetchDomainAccounts();
+});
 </script>
 
 <template>
   <div>
-    <page-header title="Quản lí VPS"></page-header>
-    
-    <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
+    <h1 class="text-lg font-bold mb-4">Quản lý Tài khoản Domain</h1>
+
+    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
       <div class="grid gap-y-2">
-        <Label for="Id">Mã tài khoản hosting</Label>
-        <Input type="text" id="Id" placeholder="Mã hóa đơn" v-model="form.Id"/>
+        <label for="domain_id">Chọn Domain</label>
+        <select v-model="form.domain_id" class="border p-2">
+          <option value="">Chọn Domain</option>
+          <option v-for="domain in domainProducts" :key="domain.id" :value="domain.id">
+            {{ domain.domain_name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="grid gap-y-2">
+        <label for="registrar_panel">Bảng điều khiển</label>
+        <Input type="text" id="registrar_panel" v-model="form.registrar_panel" required />
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.domainId">
-          <Label for="domainId">Gói domain</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn domain" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <label for="username">Tên đăng nhập</label>
+        <Input type="text" id="username" v-model="form.username" required />
       </div>
       <div class="grid gap-y-2">
-        <Label for="registerPanel">Register Panel</Label>
-        <Input type="text" id="registerPanel" placeholder="Register panel" v-model="form.registerPanel"/>
+        <label for="password">Mật khẩu</label>
+        <Input type="password" id="password" v-model="form.password" required />
       </div>
-      <div class="grid gap-y-2">
-        <Label for="username">Tên người dùng</Label>
-        <Input type="username" id="username" placeholder="Tên người dùng" v-model="form.username"/>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="password">Mật khẩu</Label>
-        <Input type="password" id="password" placeholder="Mật khẩu" v-model="form.password"/>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="date">Ngày lập</Label>
-        <Popover>
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !form.createdAt && 'text-muted-foreground',
-        )"
-      >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ form.createdAt ? df.format(form.createdAt.toDate(getLocalTimeZone())) : "Chọn ngày lập" }}
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0">
-      <Calendar v-model="form.createdAt" initial-focus />
-    </PopoverContent>
-  </Popover>
-      </div>
-      <div></div>
-      <Button type="submit">Thêm tài khoản domain</Button>
+      <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Tài khoản</Button>
     </form>
-    <DataTable :columns="columns" :data="tasks" search="Id"></DataTable>
+
+    <DataTable :columns="columns" :data="domainAccounts"></DataTable>
   </div>
 </template>
