@@ -37,17 +37,9 @@ const router = createRouter({
           } as RouteMeta & IRouteMeta
         },
         {
-          path: 'task',
-          name: 'tasks_index',
-          component: () => import('@/views/dashboard/examples/tasks/Index.vue'),
-          meta: {
-            title: 'Tasks',
-          } as RouteMeta & IRouteMeta
-        },
-        {
           path: 'user',
           name: 'user',
-          component: () => import('@/views/dashboard/examples/system/User.vue'),
+          component: () => import('@/views/dashboard/examples/system/Employee.vue'),
           meta: {
             title: 'User',
           } as RouteMeta & IRouteMeta
@@ -68,22 +60,7 @@ const router = createRouter({
             title: 'Authorize',
           } as RouteMeta & IRouteMeta
         },
-        {
-          path: 'customer_type',
-          name: 'customerType',
-          component: () => import('@/views/dashboard/examples/category/CustomerType.vue'),
-          meta: {
-            title: 'Customer Type',
-          } as RouteMeta & IRouteMeta
-        },
-        {
-          path: 'service_type',
-          name: 'serviceType',
-          component: () => import('@/views/dashboard/examples/category/ServiceType.vue'),
-          meta: {
-            title: 'Service Type',
-          } as RouteMeta & IRouteMeta
-        },
+
         {
           path: 'discount',
           name: 'discount',
@@ -143,57 +120,33 @@ const router = createRouter({
         {
           path: 'customer',
           name: 'Customer',
-          component: () => import('@/views/dashboard/examples/management/Customer.vue'),
+          component: () => import('@/views/dashboard/examples/management/User.vue'),
           meta: {
             title: 'Customer',
           } as RouteMeta & IRouteMeta
         },
         {
-          path: 'receipt',
-          name: 'Receipt',
-          component: () => import('@/views/dashboard/examples/management/Receipt.vue'),
+          path: 'invoice',
+          name: 'invoice',
+          component: () => import('@/views/dashboard/examples/management/Invoice.vue'),
           meta: {
-            title: 'Receipt',
+            title: 'Invoice',
           } as RouteMeta & IRouteMeta
         },
         {
-          path: 'response',
-          name: 'Response',
-          component: () => import('@/views/dashboard/examples/management/Response.vue'),
+          path: 'order',
+          name: 'order',
+          component: () => import('@/views/dashboard/examples/management/Order.vue'),
           meta: {
-            title: 'Response',
+            title: 'Order',
           } as RouteMeta & IRouteMeta
         },
         {
-          path: 'payment',
-          name: 'Payment',
-          component: () => import('@/views/dashboard/examples/management/Payment.vue'),
+          path: 'contract',
+          name: 'contract',
+          component: () => import('@/views/dashboard/examples/management/Contract.vue'),
           meta: {
-            title: 'Payment',
-          } as RouteMeta & IRouteMeta
-        },
-        {
-          path: 'cart',
-          name: 'Cart',
-          component: () => import('@/views/dashboard/examples/management/Cart.vue'),
-          meta: {
-            title: 'Cart',
-          } as RouteMeta & IRouteMeta
-        },
-        {
-          path: 'cart/:id',
-          name: 'CartDetail',
-          component: () => import('@/views/dashboard/examples/management/CartDetail.vue'),
-          meta: {
-            title: 'CartDetail',
-          } as RouteMeta & IRouteMeta
-        },
-        {
-          path: 'service',
-          name: 'service',
-          component: () => import('@/views/dashboard/examples/management/Service.vue'),
-          meta: {
-            title: 'Service',
+            title: 'Contract',
           } as RouteMeta & IRouteMeta
         },
         {

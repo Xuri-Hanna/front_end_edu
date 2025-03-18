@@ -10,9 +10,7 @@ interface SubMenu {
   icon : string,
   path : string
   description? : string
-
 }
-
 export const SIDEBAR_EXPAND_WIDTH = 280;
 export const SIDEBAR_COLLAPSED_WIDTH = 72;
 export const APP_MENU: Record<string,Menu> = {
@@ -69,9 +67,19 @@ export const APP_MENU: Record<string,Menu> = {
         path: 'customer',
       },
       {
+        title: 'Đơn hàng',
+        icon: 'Package2',
+        path: 'order',
+      },
+      {
         title: 'Hóa đơn',
         icon: 'ReceiptText',
-        path: 'receipt',
+        path: 'invoice',
+      },
+      {
+        title: 'Hợp đồng',
+        icon: 'Contact',
+        path: 'contract',
       },
     ],
   },
