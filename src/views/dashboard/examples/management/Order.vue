@@ -1,268 +1,408 @@
 <script setup lang="ts">
+import { ref, h, onMounted, watch } from 'vue';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
-import data from '@/assets/orders.json';
-import { ref, h } from 'vue';
-import {Input} from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
-import Badge from '@/components/ui/badge/Badge.vue';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import Textarea from '@/components/ui/textarea/Textarea.vue';
-import {
-  DateFormatter,
-  type DateValue,
-  getLocalTimeZone,
-} from '@internationalized/date'
-import { cn } from '@/lib/utils'
-import { CalendarIcon } from 'lucide-vue-next'
-interface status {
-  tag : string,
-  title : string
-}
-const df = new DateFormatter('en-US', {
-  dateStyle: 'long',
-})
-const tagVariants: status[] = [
-  {
-      tag : 'success',
-      title : 'Kích hoạt'
-  },
-  {
-      tag : 'warning',
-      title : 'Khóa'
-  },
-]
+import { Pencil, Trash, Check, X } from 'lucide-vue-next';
+import axios from 'axios';
 
+const orders = ref([]);
+const discountValue = ref(0);
 
-const tasks = ref(data);
 const columns: ColumnDef<any>[] = [
-  {
-    accessorKey: 'Id',
-    header: 'Mã đơn hàng',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'user',
-    header: 'Tên khách hàng',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'service',
-    header: 'Mô tả',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'totalPrice',
-    header: 'Giá',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'serviceType',
-    header: 'Loại dịch vụ',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'discount',
-    header: 'Mã giảm giá',
-    enableSorting: false,
-  },
+  { accessorKey: 'id', header: 'Mã đơn hàng' },
+  { accessorKey: 'name', header: 'Tên khách hàng' },
+  { accessorKey: 'email', header: 'Email' },
+  { accessorKey: 'sdt', header: 'Số điện thoại' },
+  { accessorKey: 'dia_chi', header: 'Địa chỉ' },
+  { accessorKey: 'service_id', 
+    header: 'Gói dịch vụ', 
+    cell: ({ row }) => getServiceName(row.original.service_id)
+  },  
+  { accessorKey: 'service_type', header: 'Loại dịch vụ' },
+  { accessorKey: 'discount_id', header: 'Mã giảm giá' },
+  { accessorKey: 'total_price', header: 'Giá' },
   {
     accessorKey: 'status',
     header: 'Trạng thái',
-    enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'max-w-[500px] truncate flex items-center',
-    }, [
-      h(Badge, {
-        variant: (tagVariants[Number(row.original.status )]?.tag as any),
-        class: 'mr-2',
-      }, () => tagVariants[Number(row.original.status )]?.title ),
-      
-    ])
+    cell: ({ row }) => {
+      const status = row.original.status;
+      const statusClasses = {
+        pending: 'bg-yellow-100 text-yellow-700 border-yellow-500',
+        paid: 'bg-green-100 text-green-700 border-green-500',
+        cancelled: 'bg-red-100 text-red-700 border-red-500',
+      };
+      return h(
+        'span',
+        { class: `px-3 py-1 rounded border ${statusClasses[status] || 'bg-gray-100 text-gray-700 border-gray-500'}` },
+        status === 'pending' ? 'Chờ xử lý' : status === 'paid' ? 'Đã thanh toán' : 'Đã hủy'
+      );
+    }
   },
   {
-    accessorKey: 'createdAt',
-    header: 'Ngày lập',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'updatedAt',
-    header: 'Ngày cập nhật',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'action',
+    accessorKey: 'actions',
     header: 'Hành động',
-    enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'max-w-[500px] truncate flex items-center',
-    }, [
-      h(Button, {
-        variant: "destructive",
-      }, () => "Xóa" ),
-      
-    ])
+    cell: ({ row }) => {
+      const order = row.original;
+      const isPending = order.status === 'pending';
+
+      return h('div', { class: 'flex space-x-1' }, [
+        // Nút Sửa (icon bút chì)
+        h(
+          Button,
+          { variant: 'outline', class: 'p-1', onClick: () => editOrder(order) },
+          () => h(Pencil, { class: 'w-4 h-4' })
+        ),
+
+        // Nút Xóa (icon thùng rác)
+        h(
+          Button,
+          { variant: 'destructive', class: 'p-1', onClick: () => deleteOrder(order.id) },
+          () => h(Trash, { class: 'w-4 h-4' })
+        ),
+
+        // Nếu trạng thái là "Chờ xử lý", hiển thị thêm 2 nút xác nhận / hủy
+        isPending &&
+          h(
+            Button,
+            { variant: 'success', class: 'p-1', onClick: () => updateStatus(order.id, 'paid') },
+            () => h(Check, { class: 'w-4 h-4 text-green-600' })
+          ),
+
+        isPending &&
+          h(
+            Button,
+            { variant: 'danger', class: 'p-1', onClick: () => updateStatus(order.id, 'cancelled') },
+            () => h(X, { class: 'w-4 h-4 text-red-600' })
+          ),
+      ]);
+    },
   },
 ];
-interface PAYLOAD {
-  Id : string | number,
-  userId : string | undefined,
-  serviceId : string | undefined,
-  serviceType : string | number,
-  totalPrice : string | number,
-  discountId : string | undefined,
-  status : string | undefined,
-  createdAt : any,
-  updatedAt : any
-}
-const form = ref<PAYLOAD>({
-  Id : "",
-  userId : "",
-  serviceId : "",
-  serviceType : "",
-  totalPrice : 0,
-  discountId : "",
-  status : "",
-  createdAt : "",
-  updatedAt : ""
-})
-const onSubmit = () => {
-  
-}
-</script>
 
+interface OrderPayload {
+  id?: number;
+  name: string;
+  email: string;
+  sdt: string;
+  dia_chi: string;
+  service_id: number | null;
+  service_type: string;
+  total_price: number;
+  status: string;
+  duration_months: number;
+  discount_code?: string | null;
+}
+
+const form = ref<OrderPayload>({
+  name: '',
+  email: '',
+  sdt: '',
+  dia_chi: '',
+  service_id: 0,
+  service_type: '',
+  total_price: 0,
+  status: 'pending',
+  duration_months: 3,
+  discount_code: null,
+});
+//Cập nhật trạng thái đơn hàng
+const updateStatus = async (id: number, newStatus: string) => {
+  try {
+    console.log(`🔄 Đang cập nhật trạng thái: ID ${id}, Status: "${newStatus}"`);
+
+    const response = await axios.put(`http://127.0.0.1:8000/api/orders/${id}`, {
+      status: newStatus.trim()
+    });
+
+    console.log("✅ Cập nhật thành công:", response.data);
+
+    if (newStatus === 'paid') {
+      const order = orders.value.find(o => o.id === id);
+      if (order) {
+        await addCustomer(order);
+      }
+    }
+    fetchOrders();
+  } catch (error: any) {
+    console.error('❌ Lỗi khi cập nhật trạng thái:', error.response?.data || error);
+  }
+};
+const addCustomer = async (order: any) => {
+  try {
+    console.log("🛠 Đang kiểm tra khách hàng...");
+
+    // Kiểm tra xem khách hàng đã tồn tại chưa
+    const checkResponse = await axios.get(`http://127.0.0.1:8000/api/customers?email=${order.email}`);
+    if (checkResponse.data.exists) {
+      console.log(`👤 Khách hàng đã tồn tại: ${order.email}`);
+      return;
+    }
+
+    console.log("➕ Thêm khách hàng mới...");
+    
+    // Tạo khách hàng mới nếu chưa tồn tại
+    await axios.post('http://127.0.0.1:8000/api/customers', {
+      name: order.name,
+      email: order.email,
+      sdt: order.sdt,
+      dia_chi: order.dia_chi
+    });
+
+    console.log("✅ Khách hàng đã được thêm thành công!");
+  } catch (error) {
+    console.error("❌ Lỗi khi thêm khách hàng:", error.response?.data || error);
+  }
+};
+
+// Lưu danh sách mã dịch vụ tương ứng
+const serviceOptions = ref<{ id: number; name: string; price: number }[]>([]);
+const selectedServicePrice = ref(0);
+
+// Bảng API tương ứng với từng loại dịch vụ
+const typeMap: Record<string, string> = {
+  domain: 'domain_products',
+  hosting: 'hosting_products',
+  vps: 'vps_products',
+};
+
+// Trường cần lấy (mã dịch vụ) trong từng bảng
+const nameMap: Record<string, string> = {
+  domain: 'domain_name',
+  hosting: 'plan',
+  vps: 'plan',
+};
+
+// Theo dõi khi `service_type` thay đổi
+watch(() => form.value.service_type, async (newType) => {
+  if (!newType) {
+    serviceOptions.value = [];
+    selectedServicePrice.value = 0;
+    return;
+  }
+
+  const endpoint = typeMap[newType] ?? '';
+  const nameField = nameMap[newType] ?? '';
+
+  if (!endpoint) return;
+
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/api/${endpoint}`);
+    serviceOptions.value = response.data.map((item: any) => ({
+      id: item.id,
+      name: item[nameField] ?? 'Không xác định',
+      price: item.price ?? 0,
+    }));
+
+    console.log('serviceOptions:', serviceOptions.value); // Kiểm tra danh sách mã dịch vụ
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách dịch vụ:', error);
+  }
+});
+
+// Theo dõi khi service_id hoặc duration_months thay đổi
+watch([() => form.value.service_id, () => form.value.duration_months], () => {
+  const selectedService = serviceOptions.value.find(service => service.id === form.value.service_id);
+  selectedServicePrice.value = selectedService ? selectedService.price : 0;
+
+  // Tính tổng giá = giá dịch vụ * thời hạn thuê (tháng)
+  form.value.total_price = selectedServicePrice.value * (form.value.duration_months || 1);
+ 
+});
+
+const updateTotalPrice = () => {
+  const selectedService = serviceOptions.value.find(service => service.id === form.value.service_id);
+  const basePrice = selectedService ? selectedService.price : 0;
+
+  let subtotal = basePrice * (form.value.duration_months || 1);
+  form.value.total_price = subtotal * (1 - discountValue.value / 100);
+
+  console.log(`Tổng tiền sau giảm giá: ${form.value.total_price}`);
+};
+
+
+const applyDiscount = async () => {
+  if (!form.value.discount_code) {
+    discountValue.value = 0;
+    updateTotalPrice();
+    return;
+  }
+
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/api/discounts/${form.value.discount_code}`);
+    const discount = response.data;
+
+    if (discount && discount.percentage) {
+      discountValue.value = discount.percentage;
+      console.log(`Áp dụng mã giảm giá: ${discount.code}, Giảm: ${discountValue.value}%`);
+    } else {
+      discountValue.value = 0;
+    }
+  } catch (error) {
+    console.error("Lỗi khi kiểm tra mã giảm giá:", error);
+    discountValue.value = 0;
+  }
+
+  updateTotalPrice();
+};
+
+watch(
+  [() => form.value.service_id, () => form.value.duration_months, discountValue],
+  () => {
+    updateTotalPrice();
+  }
+);
+
+watch([() => form.value.service_id, () => form.value.duration_months, discountValue], () => {
+  const selectedService = serviceOptions.value.find(service => service.id === form.value.service_id);
+  selectedServicePrice.value = selectedService ? selectedService.price : 0;
+
+  let subtotal = selectedServicePrice.value * (form.value.duration_months || 1);
+
+  // Tính tổng tiền có giảm giá
+  form.value.total_price = subtotal * (1 - discountValue.value / 100);
+
+  console.log(`Tổng tiền sau giảm giá: ${form.value.total_price}`);
+});
+
+
+// Lấy danh sách đơn hàng
+const fetchOrders = async () => {
+  const response = await axios.get('http://127.0.0.1:8000/api/orders');
+  orders.value = response.data;
+};
+const allServices = ref<{ id: number; name: string }[]>([]);
+
+const fetchServices = async () => {
+  try {
+    const responses = await Promise.all([
+      axios.get('http://127.0.0.1:8000/api/domain_products'),
+      axios.get('http://127.0.0.1:8000/api/hosting_products'),
+      axios.get('http://127.0.0.1:8000/api/vps_products')
+    ]);
+
+    allServices.value = [
+      ...responses[0].data.map((item: any) => ({ id: item.id, name: item.domain_name })),
+      ...responses[1].data.map((item: any) => ({ id: item.id, name: item.plan })),
+      ...responses[2].data.map((item: any) => ({ id: item.id, name: item.plan }))
+    ];
+
+    console.log('Danh sách dịch vụ:', allServices.value);
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách dịch vụ:', error);
+  }
+};
+const getServiceName = (id: number) => {
+  const service = allServices.value.find(service => service.id === id);
+  return service ? service.name : 'Không xác định';
+};
+
+
+
+// Gửi dữ liệu form
+const submitForm = async () => {
+  console.log("Dữ liệu gửi đi:", form.value); // Kiểm tra dữ liệu trước khi gửi
+
+  try {
+    if (form.value.id) {
+      await axios.put(`http://127.0.0.1:8000/api/orders/${form.value.id}`, form.value);
+    } else {
+      await axios.post('http://127.0.0.1:8000/api/orders', form.value);
+    }
+    form.value = {
+      name: '', email: '', sdt: '', dia_chi: '', service_id: 0, service_type: '', 
+      total_price: 0, status: 'pending', duration_months: 3
+    };
+    fetchOrders();
+  } catch (error) {
+    console.error("Lỗi khi thêm/cập nhật đơn hàng:", error.response?.data || error);
+  }
+};
+
+
+
+// Khi nhấn "Sửa" thì điền dữ liệu vào form
+const editOrder = (order: OrderPayload) => {
+  form.value = { ...order };
+};
+
+// Xóa đơn hàng
+const deleteOrder = async (id: number) => {
+  await axios.delete(`http://127.0.0.1:8000/api/orders/${id}`);
+  fetchOrders();
+};
+
+onMounted(async () => {
+  fetchOrders();
+  await fetchServices(); // Lấy danh sách dịch vụ
+});
+
+</script>
 <template>
   <div>
-    <page-header title="Quản lí đơn hàng"></page-header>
-    
-    <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
+    <h1 class="text-lg font-bold mb-4">Quản lý Đơn Hàng</h1>
+    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
       <div class="grid gap-y-2">
-        <Label for="Id">Mã đơn hàng</Label>
-        <Input type="text" id="Id" placeholder="Mã đơn hàng" v-model="form.Id"/>
+        <Label for="name">Tên khách hàng</Label>
+        <Input type="text" id="name" v-model="form.name" required />
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.userId">
-          <Label for="customerId">Khách hàng</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn khách hàng" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="email">Email</Label>
+        <Input type="email" id="email" v-model="form.email" required />
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.serviceId">
-          <Label for="serviceId">Dịch vụ</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn dịch vụ" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="sdt">Số điện thoại</Label>
+        <Input type="text" id="sdt" v-model="form.sdt" required />
       </div>
       <div class="grid gap-y-2">
-        <Label for="totalPrice">Tổng tiền</Label>
-        <Input id="totalPrice" placeholder="Tổng tiền" v-model="form.totalPrice"/>
+        <Label for="dia_chi">Địa chỉ</Label>
+        <Input type="text" id="dia_chi" v-model="form.dia_chi" required />
+      </div>
+
+      <!-- Chọn loại dịch vụ -->
+      <div class="grid gap-y-2">
+        <Label for="service_type">Loại dịch vụ</Label>
+        <select id="service_type" v-model="form.service_type" required class="border p-2 rounded">
+          <option value="">Chọn loại dịch vụ</option>
+          <option value="domain">Domain</option>
+          <option value="hosting">Hosting</option>
+          <option value="vps">VPS</option>
+        </select>
+      </div>
+
+      <!-- Chọn mã dịch vụ dựa trên loại dịch vụ -->
+      <div class="grid gap-y-2">
+        <Label for="service_id">Mã Dịch Vụ</Label>
+        <select v-model.number="form.service_id" :disabled="serviceOptions.length === 0" class="border p-2 rounded">
+          <option value="">Chọn mã dịch vụ</option>
+          <option v-for="service in serviceOptions" :key="service.id" :value="service.id">
+            {{ service.name }}
+          </option>
+        </select>
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.discountId">
-          <Label for="discountId">Mã giảm giá</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn mã giảm giá" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="duration_months">Thời hạn thuê (tháng)</Label>
+        <Input type="number" id="duration_months" v-model="form.duration_months" min="1" required />
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.status">
-          <Label for="status">Trạng thái</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="discount_code">Mã giảm giá</Label>
+        <Input type="text" id="discount_code" v-model="form.discount_code" @blur="applyDiscount" />
       </div>
       <div class="grid gap-y-2">
-        <Label for="date">Ngày lập</Label>
-        <Popover>
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !form.createdAt && 'text-muted-foreground',
-        )"
-      >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ form.createdAt ? df.format(form.createdAt.toDate(getLocalTimeZone())) : "Chọn ngày lập" }}
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0">
-      <Calendar v-model="form.createdAt" initial-focus />
-    </PopoverContent>
-  </Popover>
+        <Label for="total_price">Tổng tiền</Label>
+        <span class="border p-2 rounded bg-gray-100">{{ form.total_price }}</span>
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.status">
-          <Label for="status">Trạng thái</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                Kích hoạt
-              </SelectItem>
-              <SelectItem value="2">
-                Khóa
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="status">Trạng thái</Label>
+        <select id="status" v-model="form.status" required class="border p-2 rounded">
+          <option value="pending">Chờ xử lý</option>
+          <option value="paid">Đã thanh toán</option>
+          <option value="cancelled">Đã hủy</option>
+        </select>
       </div>
-      <Button type="submit">Thêm đơn hàng</Button>
+      <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Đơn Hàng</Button>
     </form>
-    <DataTable :columns="columns" :data="tasks" search="Id"></DataTable>
+    <DataTable :columns="columns" :data="orders"></DataTable>
   </div>
 </template>

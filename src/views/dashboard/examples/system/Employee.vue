@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { ref, h, onMounted } from 'vue';
+import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
-import data from '@/assets/users.json';
-import { ref, h } from 'vue';
 import { Badge } from '@/components/ui/badge';
-import {Input} from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
 import {
@@ -13,177 +13,163 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import router from '@/router';
-interface status {
-  tag : string,
-  title : string
+} from '@/components/ui/select';
+
+interface StatusType {
+  tag: string;
+  title: string;
 }
-const tagVariants: status[] = [
-  {
-      tag : 'success',
-      title : 'Kích hoạt'
-  },
-  {
-      tag : 'warning',
-      title : 'Khóa'
-  },
-]
+
+const tagVariants: StatusType[] = [
+  { tag: 'success', title: 'Kích hoạt', value: 'active' },
+  { tag: 'warning', title: 'Khóa', value: 'none' },
+];
 
 
-const tasks = ref(data);
+const tasks = ref([]);
+const editMode = ref(false);
+const form = ref({
+  id: undefined, // Sửa ma_nhan_vien -> id
+  chuc_vu: '',
+  status: '1',
+  hoten: '',
+  email: '',
+  password: ''
+});
+
+// Hàm lấy danh sách tài khoản
+const fetchTaiKhoan = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/tai_khoans');
+    tasks.value = response.data.map(nv => ({
+      ma_nhan_vien: nv.ma_nhan_vien,
+      hoten: nv.hoten,
+      email: nv.email,
+      password: nv.password,
+      chuc_vu: nv.chuc_vu,
+      status: nv.status === "Kích hoạt" ? "active" : "none" // Đảm bảo dữ liệu chuẩn hóa
+    }));
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách nhân viên', error);
+  }
+};
+
+
+
+const onSubmit = async () => {
+  try {
+    console.log("Dữ liệu gửi lên:", form.value);
+    if (editMode.value) {
+      await axios.put(`http://127.0.0.1:8000/api/tai_khoans/${form.value.ma_nhan_vien}`, {
+        ...form.value,
+      });
+    } else {
+      await axios.post('http://127.0.0.1:8000/api/tai_khoans', {
+        ...form.value,
+      });
+    }
+    clearData();
+    fetchTaiKhoan();
+  } catch (error) {
+    console.error('Lỗi khi gửi dữ liệu', error);
+  }
+};
+
+
+
+// Xóa tài khoản
+const deleteTaiKhoan = async (id: number) => {
+  if (confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/tai_khoans/${id}`);
+      fetchTaiKhoan();
+    } catch (error) {
+      console.error('Lỗi khi xóa tài khoản', error);
+    }
+  }
+};
+
+// Xóa dữ liệu form
+const clearData = () => {
+  editMode.value = false;
+  form.value = { id: undefined, chuc_vu: '', status: '1', hoten: '', email: '', password: '' };
+};
+
+onMounted(fetchTaiKhoan);
+
+
+// Cấu hình cột cho DataTable
 const columns: ColumnDef<any>[] = [
-  
+  { accessorKey: 'ma_nhan_vien', header: 'Mã nhân viên' },  // Hiển thị mã nhân viên
+  { accessorKey: 'hoten', header: 'Họ tên' },
+  { accessorKey: 'chuc_vu', header: 'Chức vụ' },
+  { accessorKey: 'email', header: 'Email' },
   {
-    accessorKey: 'Id',
-    header: 'Mã nhân viên',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'fullName',
-    header: 'Họ tên',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'role',
-    header: 'Chức vụ',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'phoneNumber',
-    header: 'Số điện thoại',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'status',
-    header: 'Trạng thái',
-    enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'max-w-[500px] truncate flex items-center',
-    }, [
-      h(Badge, {
-        variant: (tagVariants[Number(row.original.status )].tag as any),
-        class: 'mr-2',
-      }, () => tagVariants[Number(row.original.status )].title ),
-      
-    ])
+  accessorKey: 'status',
+  header: 'Trạng thái',
+  enableSorting: false,
+  cell: ({ row }) => {
+    const statusTag = tagVariants.find(tag => tag.value === row.original.status);
+    return h(Badge, { variant: statusTag?.tag }, () => statusTag?.title);
+  }
   },
   {
     accessorKey: 'action',
     header: 'Hành động',
     enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'max-w-[500px] truncate flex items-center',
-    }, [
+    cell: ({ row }) => h('div', {}, [
       h(Button, {
         variant: "outline",
-        class: 'mr-2',
-        onClick : () => {
+        onClick: () => {
           editMode.value = true;
-          form.value = row.original
+          form.value = { ...row.original };  // Cập nhật form khi sửa
         }
       }, () => "Sửa"),
-      h(Button, {
-        variant: "destructive",
-      }, () => "Xóa" )
+      h(Button, { variant: "destructive", onClick: () => deleteTaiKhoan(row.original.ma_nhan_vien) }, () => "Xóa")
     ])
   },
 ];
-interface PAYLOAD {
-  Id : number | undefined,
-  role : string | undefined,
-  status : string | undefined,
-  phoneNumber : string | number,
-  fullName : string | number,
-  email : string | number
-}
-const form = ref<PAYLOAD>({
-  Id : undefined,
-  role : undefined,
-  status : undefined,
-  phoneNumber : "",
-  fullName : "",
-  email : ""
-})
-const onSubmit = () => {
-  
-}
-const clearData = () => {
-  editMode.value = false;
-  form.value = {
-    Id : undefined,
-    role : undefined,
-    status : undefined,
-    phoneNumber : "",
-    fullName : "",
-    email : ""
-  }
-}
-const editMode = ref(false);
+
 </script>
 
 <template>
   <div>
-    <page-header title="Quản lý nhân viên"></page-header>
+    <page-header title="Quản lý tài khoản"></page-header>
     <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
       <div class="grid gap-y-2">
-        <Label for="Id">Mã nhân viên</Label>
-        <Input type="text" id="Id" placeholder="Mã nhân viên" v-model="form.Id"/>
-      </div>
-      <div class="grid gap-y-2">
-        <Select v-model="form.role">
-          <Label for="role">Chức vụ</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn chức vụ" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                Giám đốc
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div class="grid gap-y-2">
-        <Select v-model="form.status">
-          <Label for="status">Trạng thái</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                Kích hoạt
-              </SelectItem>
-              <SelectItem value="2">
-                Khóa
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="phoneNumber">Số điện thoại</Label>
-        <Input type="number" id="phoneNumber" placeholder="Số điện thoại" v-model="form.phoneNumber"/>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="fullName">Họ tên</Label>
-        <Input type="text" id="fullName" placeholder="Họ tên" v-model="form.fullName"/>
+        <Label for="hoten">Họ tên</Label>
+        <Input type="text" v-model="form.hoten" placeholder="Họ tên" />
       </div>
       <div class="grid gap-y-2">
         <Label for="email">Email</Label>
-        <Input type="email" id="email" placeholder="Email" v-model="form.email"/>
+        <Input type="email" v-model="form.email" placeholder="Email" />
       </div>
-      <Button type="submit" class="col-span-2" v-if="!editMode">Thêm người dùng</Button>
-      <Button type="submit" v-if="editMode">Sửa người dùng</Button>
-      <Button type="submit" @click="clearData()" v-if="editMode">Hủy</Button>
+      <div class="grid gap-y-2">
+        <Label for="password">Mật khẩu</Label>
+        <Input type="password" v-model="form.password" placeholder="Mật khẩu" />
+      </div>
+      <div class="grid gap-y-2">
+        <Label for="chuc_vu">Chức vụ</Label>
+        <Input type="text" v-model="form.chuc_vu" placeholder="Chức vụ" />
+      </div>
+      <div class="grid gap-y-2">
+        <Label for="status">Trạng thái</Label>
+        <Select v-model="form.status">
+          <SelectTrigger>
+            <SelectValue :placeholder="form.status === 'active' ? 'Kích hoạt' : 'Khóa'" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="active">Kích hoạt</SelectItem>
+              <SelectItem value="none">Khóa</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+      <Button type="submit" v-if="!editMode">Thêm tài khoản</Button>
+      <Button type="submit" v-if="editMode">Cập nhật</Button>
+      <Button v-if="editMode" @click="clearData">Hủy</Button>
     </form>
-    <DataTable :columns="columns" :data="tasks" search="email"></DataTable>
+    <DataTable :columns="columns" :data="tasks"></DataTable>
   </div>
 </template>

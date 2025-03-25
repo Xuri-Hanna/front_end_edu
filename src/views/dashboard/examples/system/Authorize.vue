@@ -1,10 +1,7 @@
 <script setup lang="ts">
+import { ref, h, onMounted } from 'vue';
+import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
-import data from '@/assets/authorizedUsers.json';
-import { ref, h } from 'vue';
-import { Badge } from '@/components/ui/badge';
-import {Input} from '@/components/ui/input';
-import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
 import {
   Select,
@@ -13,118 +10,177 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import {Card,CardContent} from '@/components/ui/card';
-interface status {
-  tag : string,
-  title : string
-}
-const tagVariants: status[] = [
-  {
-      tag : 'success',
-      title : 'Kích hoạt'
-  },
-  {
-      tag : 'warning',
-      title : 'Khóa'
-  },
-]
+} from '@/components/ui/select';
 
+// Danh sách nhân viên, quyền, và phân quyền
+const phanQuyenList = ref([]);
+const taiKhoanList = ref([]);
+const quyenList = ref([]);
+const editMode = ref(false);
 
-const tasks = ref(data);
+// Dữ liệu form
+const form = ref({
+  ma_phan_quyen:'',
+  ma_nhan_vien: '',
+  ma_quyen: ''
+});
+
+// 🛠 Lấy danh sách phân quyền từ API
+const fetchPhanQuyen = async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/api/phan_quyens');
+    phanQuyenList.value = response.data;
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách phân quyền', error);
+  }
+};
+
+// 🛠 Lấy danh sách tài khoản (nhân viên)
+const fetchTaiKhoan = async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/api/tai_khoans');
+    taiKhoanList.value = response.data;
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách tài khoản', error);
+  }
+};
+
+// 🛠 Lấy danh sách quyền
+const fetchQuyen = async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/api/quyens');
+    quyenList.value = response.data;
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách quyền', error);
+  }
+};
+
+// 🛠 Gửi dữ liệu (Thêm / Sửa phân quyền)
+const onSubmit = async () => {
+  try {
+    if (editMode.value) {
+      await axios.put(`http://localhost:8000/api/phan_quyens/${form.value.ma_phan_quyen}`, form.value); // ✅ Sửa ID đúng
+    } else {
+      await axios.post('http://localhost:8000/api/phan_quyens', form.value);
+    }
+    clearData();
+    fetchPhanQuyen();
+  } catch (error) {
+    console.error('Lỗi khi gửi dữ liệu', error);
+  }
+};
+
+// 🛠 Xóa phân quyền
+const deletePhanQuyen = async (id: number) => {
+  if (confirm('Bạn có chắc chắn muốn xóa phân quyền này?')) {
+    try {
+      await axios.delete(`http://localhost:8000/api/phan_quyens/${id}`);
+      fetchPhanQuyen();
+    } catch (error) {
+      console.error('Lỗi khi xóa phân quyền', error);
+    }
+  }
+};
+
+// 🛠 Xóa dữ liệu form
+const clearData = () => {
+  editMode.value = false;
+  form.value = { 
+    ma_phan_quyen: '', // ✅ Đặt lại giá trị khi hủy
+    ma_nhan_vien: '', 
+    ma_quyen: '' 
+  };
+};
+
+// 🛠 Load dữ liệu khi component được tạo
+onMounted(() => {
+  fetchPhanQuyen();
+  fetchTaiKhoan();
+  fetchQuyen();
+});
+
+// 🛠 Cấu hình cột cho DataTable
 const columns: ColumnDef<any>[] = [
-  
-  {
-    accessorKey: 'nvId',
-    header: 'Mã nhân viên',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'nvName',
-    header: 'Họ tên',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'roleId',
-    header: 'Mã quyền',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'roleName',
-    header: 'Tên quyền',
-    enableSorting: false,
-  },
+  { accessorKey: 'ten_nhan_vien', header: '' }, 
+  { accessorKey: 'chuc_vu', header: 'Chức vụ' },
+  { accessorKey: 'ten_quyen', header: 'Tên quyền' },
   {
     accessorKey: 'action',
     header: 'Hành động',
     enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'max-w-[500px] truncate flex items-center',
-    }, [
-      h(Button, {
-        variant: "outline",
-        class: 'mr-2',
-      }, () => "Sửa" ),
-      h(Button, {
-        variant: "destructive",
-      }, () => "Xóa" ),
-      
-    ])
-  },
+    cell: ({ row }) =>
+      h('div', { class: 'flex justify-center' }, [
+        h(
+          Button,
+          {
+            variant: 'outline',
+            class: 'mr-2',
+            onClick: () => {
+              editMode.value = true;
+              form.value = {
+                ma_phan_quyen: row.original.ma_phan_quyen, 
+                ma_nhan_vien: row.original.ma_nhan_vien,
+                ma_quyen: row.original.ma_quyen
+              };
+            }
+          },
+          () => 'Sửa'
+        ),
+        h(
+          Button,
+          {
+            variant: 'destructive',
+            onClick: () => deletePhanQuyen(row.original.ma_phan_quyen)
+          },
+          () => 'Xóa'
+        )
+      ])
+  }
 ];
 
-interface PAYLOAD {
-  roleId : string | undefined,
-  nvId : string | undefined,
-
-}
-const form = ref<PAYLOAD>({
-  nvId : "",
-  roleId : "",
-})
-const onSubmit = () => {
-  
-}
 </script>
 
 <template>
   <div>
-    <page-header title="Quản lý phân quyền"></page-header>
+    <h2 class="text-lg font-bold mb-4">Quản lý Phân Quyền</h2>
+
     <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
-        <div class="grid gap-y-2">
-        <Select v-model="form.nvId">
-          <Label for="roleName">Tên nhân viên</Label>
+      <div>
+        <label for="ma_nhan_vien" class="block text-sm font-medium">Tên nhân viên</label>
+        <Select v-model="form.ma_nhan_vien">
           <SelectTrigger>
             <SelectValue placeholder="Chọn nhân viên" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="1">
-                Lê Hoàng Tuấn
+              <SelectItem v-for="tk in taiKhoanList" :key="tk.ma_nhan_vien" :value="tk.ma_nhan_vien">
+                {{ tk.chuc_vu }}
               </SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
       </div>
-      <div class="grid gap-y-2">
-        <Select v-model="form.roleId">
-          <Label for="status">Tên quyền</Label>
+
+      <div>
+        <label for="ma_quyen" class="block text-sm font-medium">Tên quyền</label>
+        <Select v-model="form.ma_quyen">
           <SelectTrigger>
             <SelectValue placeholder="Chọn quyền" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="1">
-                Giám đốc
+              <SelectItem v-for="quyen in quyenList" :key="quyen.ma_quyen" :value="quyen.ma_quyen">
+                {{ quyen.ten_quyen }}
               </SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
-        
       </div>
-      <Button type="submit" class="col-span-2">Phân quyền</Button>
 
+      <Button type="submit" class="col-span-2">{{ editMode ? "Cập nhật" : "Thêm mới" }}</Button>
+      <Button v-if="editMode" @click="clearData">Hủy</Button>
     </form>
-    <DataTable :columns="columns" :data="tasks" search="nvName"></DataTable>
+
+    <DataTable :columns="columns" :data="phanQuyenList" search="ten_nhan_vien"></DataTable>
   </div>
 </template>

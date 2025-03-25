@@ -10,8 +10,7 @@ const discounts = ref([]);
 
 // Định nghĩa cột cho bảng hiển thị
 const columns: ColumnDef<any>[] = [
-  { accessorKey: 'id', header: 'Mã ID' },
-  { accessorKey: 'code', header: 'Mã giảm giá' },
+  { accessorKey: 'id', header: 'Mã giảm giá' },
   { accessorKey: 'percentage', header: 'Phần trăm (%)' },
   { accessorKey: 'expiry_date', header: 'Ngày hết hạn' },
   { accessorKey: 'discount_type', header: 'Loại giảm giá' },

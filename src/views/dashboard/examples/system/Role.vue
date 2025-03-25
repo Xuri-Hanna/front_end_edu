@@ -1,84 +1,99 @@
 <script setup lang="ts">
+import { ref, h, onMounted } from 'vue';
+import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
-import data from '@/assets/roles.json';
-import { ref, h } from 'vue';
-import {Input} from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
+import { Input } from '@/components/ui/input';
 
-interface status {
-  tag : string,
-  title : string
-}
-const tagVariants: status[] = [
-  {
-      tag : 'success',
-      title : 'Kích hoạt'
-  },
-  {
-      tag : 'warning',
-      title : 'Khóa'
-  },
-]
+const quyenList = ref([]);
+const editMode = ref(false);
+const form = ref({
+  ma_quyen: undefined,
+  ten_quyen: ''
+});
 
+// 🔹 Lấy danh sách quyền
+const fetchQuyen = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/quyens');
+    quyenList.value = response.data;
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách quyền', error);
+  }
+};
 
-const tasks = ref(data);
-const columns: ColumnDef<PAYLOAD>[] = [
-  
-  {
-    accessorKey: 'Id',
-    header: 'Mã quyền',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'name',
-    header: 'Tên quyền',
-    enableSorting: false,
-  },
+// 🔹 Gửi dữ liệu (Thêm hoặc Cập nhật)
+const onSubmit = async () => {
+  try {
+    if (editMode.value) {
+      await axios.put(`http://127.0.0.1:8000/api/quyens/${form.value.ma_quyen}`, form.value);
+    } else {
+      await axios.post('http://127.0.0.1:8000/api/quyens', form.value);
+    }
+    clearData();
+    fetchQuyen();
+  } catch (error) {
+    console.error('Lỗi khi gửi dữ liệu', error);
+  }
+};
+
+// 🔹 Xóa quyền
+const deleteQuyen = async (id: number) => {
+  if (confirm('Bạn có chắc chắn muốn xóa quyền này?')) {
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/quyens/${id}`);
+      fetchQuyen();
+    } catch (error) {
+      console.error('Lỗi khi xóa quyền', error);
+    }
+  }
+};
+
+// 🔹 Xóa dữ liệu form
+const clearData = () => {
+  editMode.value = false;
+  form.value = { ma_quyen: undefined, ten_quyen: '' };
+};
+
+onMounted(fetchQuyen);
+
+// 🔹 Cấu hình cột cho DataTable
+const columns: ColumnDef<any>[] = [
+  { accessorKey: 'ma_quyen', header: 'Mã Quyền' },
+  { accessorKey: 'ten_quyen', header: 'Tên Quyền' },
   {
     accessorKey: 'action',
-    header: () => h('div', { class : 'text-center'},'Hành động'),
+    header: 'Hành động',
     enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'flex justify-center',
-    }, [
+    cell: ({ row }) => h('div', {}, [
       h(Button, {
         variant: "outline",
-        class: 'mr-2',
-      }, () => "Sửa" ),
-      h(Button, {
-        variant: "destructive",
-      }, () => "Xóa" ),
-      
+        onClick: () => {
+          editMode.value = true;
+          form.value = { ...row.original };
+        }
+      }, () => "Sửa"),
+      h(Button, { variant: "destructive", onClick: () => deleteQuyen(row.original.ma_quyen) }, () => "Xóa")
     ])
   },
 ];
-interface PAYLOAD {
-  Id : string | number,
-  name : string | number,
-}
-const form = ref<PAYLOAD>({
-  Id : "",
-  name : "",
-})
-const onSubmit = () => {
-  
-}
 </script>
+
 <template>
-    <div>
-      <page-header title="Quản lý quyền"></page-header>
-      <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
+  <div>
+    <page-header title="Quản lý Quyền"></page-header>
+    
+    <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
       <div class="grid gap-y-2">
-        <Label for="roleId">Mã quyền</Label>
-        <Input type="text" id="nvId" placeholder="Mã quyền" v-model="form.Id"/>
+        <Label for="ten_quyen">Tên Quyền</Label>
+        <Input type="text" v-model="form.ten_quyen" placeholder="Tên Quyền" required />
       </div>
-      <div class="grid gap-y-2">
-        <Label for="name">Tên quyền</Label>
-        <Input type="text" id="name" placeholder="Tên quyền" v-model="form.name"/>
-      </div>
-      <Button type="submit">Thêm quyền</Button>
-      </form>
-      <DataTable :columns="columns" :data="tasks" search="name"></DataTable>
-    </div>
+      <Button type="submit" v-if="!editMode">Thêm quyền</Button>
+      <Button type="submit" v-if="editMode">Cập nhật</Button>
+      <Button v-if="editMode" @click="clearData">Hủy</Button>
+    </form>
+
+    <DataTable :columns="columns" :data="quyenList"></DataTable>
+  </div>
 </template>
