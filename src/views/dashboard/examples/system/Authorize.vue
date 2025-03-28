@@ -88,7 +88,7 @@ const clearData = () => {
   form.value = { 
     ma_phan_quyen: '', // ✅ Đặt lại giá trị khi hủy
     ma_nhan_vien: '', 
-    ma_quyen: '' 
+    ma_quyen: ''
   };
 };
 

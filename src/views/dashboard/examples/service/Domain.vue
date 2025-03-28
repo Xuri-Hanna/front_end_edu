@@ -15,7 +15,7 @@ const columns: ColumnDef<any>[] = [
   { 
     accessorKey: 'price_start', 
     header: 'Giá khởi tạo', 
-    cell: ({ row }) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.original.price)
+    cell: ({ row }) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.original.price_start)
   },
   { 
     accessorKey: 'price', 

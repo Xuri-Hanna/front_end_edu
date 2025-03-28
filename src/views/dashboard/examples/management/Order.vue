@@ -36,7 +36,7 @@ const columns: ColumnDef<any>[] = [
       return h(
         'span',
         { class: `px-3 py-1 rounded border ${statusClasses[status] || 'bg-gray-100 text-gray-700 border-gray-500'}` },
-        status === 'pending' ? 'Chờ xử lý' : status === 'paid' ? 'Đã thanh toán' : 'Đã hủy'
+        status === 'pending' ? 'Chờ xử lý' : status === 'paid' ? 'Đã chấp thuận' : 'Đã hủy'
       );
     }
   },
@@ -122,6 +122,7 @@ const updateStatus = async (id: number, newStatus: string) => {
       const order = orders.value.find(o => o.id === id);
       if (order) {
         await addCustomer(order);
+        await createInvoice(order);
       }
     }
     fetchOrders();
@@ -132,9 +133,10 @@ const updateStatus = async (id: number, newStatus: string) => {
 const addCustomer = async (order: any) => {
   try {
     console.log("🛠 Đang kiểm tra khách hàng...");
-
-    // Kiểm tra xem khách hàng đã tồn tại chưa
+    
     const checkResponse = await axios.get(`http://127.0.0.1:8000/api/customers?email=${order.email}`);
+    console.log("📩 Kết quả kiểm tra khách hàng:", checkResponse.data);
+    
     if (checkResponse.data.exists) {
       console.log(`👤 Khách hàng đã tồn tại: ${order.email}`);
       return;
@@ -142,19 +144,57 @@ const addCustomer = async (order: any) => {
 
     console.log("➕ Thêm khách hàng mới...");
     
-    // Tạo khách hàng mới nếu chưa tồn tại
-    await axios.post('http://127.0.0.1:8000/api/customers', {
+    const addResponse = await axios.post('http://127.0.0.1:8000/api/customers', {
       name: order.name,
       email: order.email,
       sdt: order.sdt,
       dia_chi: order.dia_chi
     });
 
-    console.log("✅ Khách hàng đã được thêm thành công!");
+    console.log("✅ Khách hàng đã được thêm:", addResponse.data);
   } catch (error) {
-    console.error("❌ Lỗi khi thêm khách hàng:", error.response?.data || error);
+    console.error("❌ Lỗi khi thêm khách hàng:",error);
   }
 };
+const getCustomerByEmail = async (email: string) => {
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/api/customers`);
+    const customers = response.data;
+
+    return customers.find((customer: any) => customer.email === email) || null;
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy danh sách khách hàng:", error);
+    return null;
+  }
+};
+
+const createInvoice = async (order: any) => {
+  try {
+    console.log("🔍 Đang tìm kiếm khách hàng...");
+
+    const customer = await getCustomerByEmail(order.email);
+    if (!customer) {
+      console.error("❌ Không tìm thấy khách hàng!");
+      return;
+    }
+
+    console.log(`📝 Đang tạo hóa đơn cho khách hàng ${customer.id}, đơn hàng ${order.id}`);
+
+    await axios.post('http://127.0.0.1:8000/api/invoices', {
+      order_id: order.id,
+      user_id: customer.id,
+      amount: order.total_price,
+      status: 'unpaid',
+      issued_at: new Date().toISOString().split("T")[0],
+      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    });
+
+    console.log("✅ Hóa đơn đã được tạo thành công!");
+  } catch (error) {
+    console.error("❌ Lỗi khi tạo hóa đơn:", error.response?.data || error);
+  }
+};
+
 
 // Lưu danh sách mã dịch vụ tương ứng
 const serviceOptions = ref<{ id: number; name: string; price: number }[]>([]);
@@ -316,7 +356,7 @@ const submitForm = async () => {
     };
     fetchOrders();
   } catch (error) {
-    console.error("Lỗi khi thêm/cập nhật đơn hàng:", error.response?.data || error);
+    console.error("Lỗi khi thêm/cập nhật đơn hàng:", error);
   }
 };
 
@@ -397,7 +437,7 @@ onMounted(async () => {
         <Label for="status">Trạng thái</Label>
         <select id="status" v-model="form.status" required class="border p-2 rounded">
           <option value="pending">Chờ xử lý</option>
-          <option value="paid">Đã thanh toán</option>
+          <option value="paid">Đã chấp thuận</option>
           <option value="cancelled">Đã hủy</option>
         </select>
       </div>

@@ -16,14 +16,7 @@ const columns: ColumnDef<any>[] = [
     accessorKey: 'price',
     header: 'Giá',
     enableSorting: false,
-    cell: ({ row }) => {
-      const formattedPrice = new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(row.original.price);
-
-      return formattedPrice;
-    }
+      cell: ({ row }) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.original.price)
   },
   { accessorKey: 'disk_space', header: 'Dung lượng' },
   { accessorKey: 'bandwidth', header: 'Băng thông' },

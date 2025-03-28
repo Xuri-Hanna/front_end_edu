@@ -92,7 +92,7 @@ export const APP_MENU: Record<string, Menu> = {
       {
         title: 'Hóa đơn',
         icon: 'ReceiptText',
-        path: 'receipt',
+        path: 'invoice',
       },
       {
         title: 'Đơn hàng',
@@ -102,7 +102,7 @@ export const APP_MENU: Record<string, Menu> = {
       {
         title: 'Hợp đồng',
         icon: 'ReceiptText',
-        path: 'contract ',
+        path: 'contract',
       },
       {
         title: 'Mã giảm giá',
