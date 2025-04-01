@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { ref, onMounted, computed, h } from 'vue';
+import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
-import data from '@/assets/orders.json';
-import { ref, h } from 'vue';
-import {Input} from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
@@ -13,294 +13,176 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import Textarea from '@/components/ui/textarea/Textarea.vue';
+} from '@/components/ui/select';
 import {
   DateFormatter,
   type DateValue,
   getLocalTimeZone,
-} from '@internationalized/date'
-import { cn } from '@/lib/utils'
-import { CalendarIcon } from 'lucide-vue-next'
-interface status {
-  tag : string,
-  title : string
-}
-const df = new DateFormatter('en-US', {
-  dateStyle: 'long',
-})
-const tagVariants: status[] = [
-  {
-      tag : 'success',
-      title : 'Kích hoạt'
-  },
-  {
-      tag : 'warning',
-      title : 'Khóa'
-  },
-]
+} from '@internationalized/date';
+import { CalendarIcon } from 'lucide-vue-next';
 
 
-const tasks = ref(data);
+// API URL
+const API_URL = 'http://localhost:8000/api/contracts'; // Cập nhật theo API của bạn
+
+const df = new DateFormatter('en-US', { dateStyle: 'long' });
+
+const tagVariants = {
+  active: { tag: 'success', title: 'Kích hoạt' },
+  expired: { tag: 'danger', title: 'Hết hạn' },
+  pending: { tag: 'warning', title: 'Chờ duyệt' },
+};
+
+const contracts = ref([]);
+const form = ref({
+  id: null,
+  user_id: '',
+  order_id: '',
+  start_date: '',
+  end_date: '',
+  status: '',
+});
+
+const isEditing = ref(false);
+
+// Load hợp đồng từ API
+const loadContracts = async () => {
+  try {
+    const { data } = await axios.get(API_URL);
+    contracts.value = data.data;
+  } catch (error) {
+    console.error('Lỗi khi tải hợp đồng:', error);
+  }
+};
+
+// Xử lý thêm/sửa hợp đồng
+const submitForm = async () => {
+  try {
+    if (isEditing.value) {
+      await axios.put(`${API_URL}/${form.value.id}`, form.value);
+    
+    } else {
+      await axios.post(API_URL, form.value);
+
+    }
+    resetForm();
+    loadContracts();
+  } catch (error) {
+    console.error('Lỗi khi xử lý hợp đồng:', error);
+  
+  }
+};
+
+// Xử lý xóa hợp đồng
+const deleteContract = async (id) => {
+  if (!confirm('Bạn có chắc chắn muốn xóa hợp đồng này?')) return;
+  try {
+    await axios.delete(`${API_URL}/${id}`);
+
+    loadContracts();
+  } catch (error) {
+    console.error('Lỗi khi xóa hợp đồng:', error);
+
+  }
+};
+
+// Chỉnh sửa hợp đồng
+const editContract = (contract) => {
+  form.value = { ...contract };
+  isEditing.value = true;
+};
+
+// Reset form
+const resetForm = () => {
+  form.value = {
+    id: null,
+    user_id: '',
+    order_id: '',
+    start_date: '',
+    end_date: '',
+    status: '',
+  };
+  isEditing.value = false;
+};
+
+// Cột bảng
 const columns: ColumnDef<any>[] = [
-  {
-    accessorKey: 'Id',
-    header: 'Mã hợp đồng',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'user',
-    header: 'Tên khách hàng',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'order',
-    header: 'Đơn hàng',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'serviceType',
-    header: 'Loại dịch vụ',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'startDate',
-    header: 'Ngày bắt đầu',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'endDate',
-    header: 'Ngày kết thúc',
-    enableSorting: false,
-  },
+  { accessorKey: 'id', header: 'Mã hợp đồng' },
+  { accessorKey: 'khach_hang.name', header: 'Tên khách hàng' },
+  { accessorKey: 'order.id', header: 'Mã đơn hàng' },
+  { accessorKey: 'start_date', header: 'Ngày bắt đầu' },
+  { accessorKey: 'end_date', header: 'Ngày kết thúc' },
   {
     accessorKey: 'status',
     header: 'Trạng thái',
-    enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'max-w-[500px] truncate flex items-center',
-    }, [
-      h(Badge, {
-        variant: (tagVariants[Number(row.original.status )]?.tag as any),
-        class: 'mr-2',
-      }, () => tagVariants[Number(row.original.status )]?.title ),
-      
-    ])
-  },
-  {
-    accessorKey: 'createdAt',
-    header: 'Ngày lập',
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'updatedAt',
-    header: 'Ngày cập nhật',
-    enableSorting: false,
+    cell: ({ row }) =>
+      h(Badge, { variant: tagVariants[row.original.status].tag }, () =>
+        tagVariants[row.original.status].title
+      ),
   },
   {
     accessorKey: 'action',
     header: 'Hành động',
-    enableSorting: false,
-    cell: ({ row }) => h('div', {
-      class: 'max-w-[500px] truncate flex items-center',
-    }, [
-      h(Button, {
-        variant: "destructive",
-      }, () => "Xóa" ),
-      
-    ])
+    cell: ({ row }) =>
+      h('div', { class: 'flex gap-2' }, [
+        h(Button, { variant: 'secondary', onClick: () => editContract(row.original) }, () => 'Sửa'),
+        h(Button, { variant: 'destructive', onClick: () => deleteContract(row.original.id) }, () => 'Xóa'),
+        h(Button, { variant: 'secondary', onClick: () => deleteContract(row.original.id) }, () => '📩 Gửi Email'),
+        h(
+            Button,
+            {
+              variant: "outline",
+              onClick: () => exportInvoice(invoice.id),
+            },
+            () => "Xuất"
+          )
+      ]),
   },
 ];
-interface PAYLOAD {
-  Id : string | number,
-  userId : string | undefined,
-  orderId : string | undefined,
-  serviceType : string | undefined,
-  startDate : any,
-  endDate : any,
-  status : string | undefined,
-  createdAt : any,
-  updatedAt : any
-}
-const form = ref<PAYLOAD>({
-  Id : "",
-  userId : "",
-  orderId : "",
-  serviceType : "",
-  startDate : "",
-  endDate : "",
-  status : "",
-  createdAt : "",
-  updatedAt : ""
-})
-const onSubmit = () => {
-  
-}
+
+onMounted(loadContracts);
 </script>
 
 <template>
   <div>
-    <page-header title="Quản lí hợp đồng"></page-header>
-    
-    <form class="w-full grid grid-cols-2 mb-10 gap-5" @submit.prevent="onSubmit">
+    <h2 class="text-xl font-bold mb-4">Quản lý Hợp đồng</h2>
+
+    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-5 mb-10">
       <div class="grid gap-y-2">
-        <Label for="Id">Mã hợp đồng</Label>
-        <Input type="text" id="Id" placeholder="Mã hợp đồng" v-model="form.Id"/>
+        <Label for="user_id">Khách hàng</Label>
+        <Input type="text" id="user_id" placeholder="Nhập ID khách hàng" v-model="form.user_id" />
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.userId">
-          <Label for="customerId">Khách hàng</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn khách hàng" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="order_id">Đơn hàng</Label>
+        <Input type="text" id="order_id" placeholder="Nhập ID đơn hàng" v-model="form.order_id" />
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.orderId">
-          <Label for="orderId">Đơn hàng</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn đơn hàng" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="start_date">Ngày bắt đầu</Label>
+        <Input type="date" id="start_date" v-model="form.start_date" />
       </div>
       <div class="grid gap-y-2">
-        <Select v-model="form.serviceType">
-          <Label for="serviceType">Loại dịch vụ</Label>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn loại dịch vụ" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <Label for="end_date">Ngày kết thúc</Label>
+        <Input type="date" id="end_date" v-model="form.end_date" />
       </div>
       <div class="grid gap-y-2">
+        <Label for="status">Trạng thái</Label>
         <Select v-model="form.status">
-          <Label for="status">Trạng thái</Label>
           <SelectTrigger>
             <SelectValue placeholder="Chọn trạng thái" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="1">
-                1
-              </SelectItem>
-              <SelectItem value="2">
-                2
-              </SelectItem>
+              <SelectItem value="active">Kích hoạt</SelectItem>
+              <SelectItem value="expired">Hết hạn</SelectItem>
+              <SelectItem value="pending">Chờ duyệt</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
       </div>
-      <div class="grid gap-y-2">
-        <Label for="date">Ngày lập</Label>
-        <Popover>
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !form.createdAt && 'text-muted-foreground',
-        )"
-      >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ form.createdAt ? df.format(form.createdAt.toDate(getLocalTimeZone())) : "Chọn ngày lập" }}
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0">
-      <Calendar v-model="form.createdAt" initial-focus />
-    </PopoverContent>
-  </Popover>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="date">Ngày bắt đầu</Label>
-        <Popover>
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !form.startDate && 'text-muted-foreground',
-        )"
-      >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ form.startDate ? df.format(form.startDate.toDate(getLocalTimeZone())) : "Chọn ngày bắt đầu" }}
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0">
-      <Calendar v-model="form.startDate" initial-focus />
-    </PopoverContent>
-  </Popover>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="date">Ngày lập</Label>
-        <Popover>
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !form.createdAt && 'text-muted-foreground',
-        )"
-      >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ form.createdAt ? df.format(form.createdAt.toDate(getLocalTimeZone())) : "Chọn ngày lập" }}
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0">
-      <Calendar v-model="form.createdAt" initial-focus />
-    </PopoverContent>
-  </Popover>
-      </div>
-      <div class="grid gap-y-2">
-        <Label for="date">Ngày kết thúc</Label>
-        <Popover>
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !form.endDate && 'text-muted-foreground',
-        )"
-      >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ form.endDate ? df.format(form.endDate.toDate(getLocalTimeZone())) : "Chọn ngày kết thúc" }}
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0">
-      <Calendar v-model="form.endDate" initial-focus />
-    </PopoverContent>
-  </Popover>
-      </div>
-      <Button type="submit">Thêm hợp đồng</Button>
+      <Button type="submit">{{ isEditing ? 'Cập nhật' : 'Thêm hợp đồng' }}</Button>
+      <Button type="button" variant="outline" @click="resetForm">Hủy</Button>
     </form>
-    <DataTable :columns="columns" :data="tasks" search="Id"></DataTable>
+
+    <DataTable :columns="columns" :data="contracts" search="id"></DataTable>
   </div>
 </template>

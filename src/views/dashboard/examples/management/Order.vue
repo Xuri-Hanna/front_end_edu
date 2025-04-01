@@ -16,10 +16,10 @@ const columns: ColumnDef<any>[] = [
   { accessorKey: 'email', header: 'Email' },
   { accessorKey: 'sdt', header: 'Số điện thoại' },
   { accessorKey: 'dia_chi', header: 'Địa chỉ' },
-  { accessorKey: 'service_id', 
-    header: 'Gói dịch vụ', 
-    cell: ({ row }) => getServiceName(row.original.service_id)
-  },  
+  // { accessorKey: 'service_id', 
+  //   header: 'Gói dịch vụ', 
+  //   cell: ({ row }) => getServiceName(row.original.service_id)
+  // },  
   { accessorKey: 'service_type', header: 'Loại dịch vụ' },
   { accessorKey: 'discount_id', header: 'Mã giảm giá' },
   { accessorKey: 'total_price', header: 'Giá' },

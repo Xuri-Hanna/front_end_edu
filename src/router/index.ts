@@ -25,7 +25,7 @@ const router = createRouter({
       component: DashboardLayoutVue,
       redirect: '/dashboard/home',
       meta: {
-        title: 'Dashboard',
+        title: 'Bảng điều khiển',
       },
       children: [
         {
@@ -33,7 +33,7 @@ const router = createRouter({
           name: 'home',
           component: () => import('@/views/dashboard/examples/Home.vue'),
           meta: {
-            title: 'Home',
+            title: 'Trang chủ',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -41,7 +41,7 @@ const router = createRouter({
           name: 'user',
           component: () => import('@/views/dashboard/examples/system/Employee.vue'),
           meta: {
-            title: 'User',
+            title: 'Người dùng',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -49,7 +49,7 @@ const router = createRouter({
           name: 'role',
           component: () => import('@/views/dashboard/examples/system/Role.vue'),
           meta: {
-            title: 'Role',
+            title: 'Quyền',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -57,7 +57,7 @@ const router = createRouter({
           name: 'authorize',
           component: () => import('@/views/dashboard/examples/system/Authorize.vue'),
           meta: {
-            title: 'Authorize',
+            title: 'Phân quyền',
           } as RouteMeta & IRouteMeta
         },
 
@@ -66,7 +66,7 @@ const router = createRouter({
           name: 'discount',
           component: () => import('@/views/dashboard/examples/management/Discount.vue'),
           meta: {
-            title: 'Discount',
+            title: 'Mã giảm giá',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -82,7 +82,7 @@ const router = createRouter({
           name: 'domain',
           component: () => import('@/views/dashboard/examples/service/Domain.vue'),
           meta: {
-            title: 'Domain',
+            title: 'Miền',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -98,7 +98,7 @@ const router = createRouter({
           name: 'accountVps',
           component: () => import('@/views/dashboard/examples/account/VpsAccount.vue'),
           meta: {
-            title: 'AccountVps',
+            title: 'Tài khoản VPS',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -106,7 +106,7 @@ const router = createRouter({
           name: 'accountDomain',
           component: () => import('@/views/dashboard/examples/account/DomainAccount.vue'),
           meta: {
-            title: 'AccountDomain',
+            title: 'Tài khoản Domain',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -114,7 +114,7 @@ const router = createRouter({
           name: 'accountHosting',
           component: () => import('@/views/dashboard/examples/account/HostingAccount.vue'),
           meta: {
-            title: 'AccountHosting',
+            title: 'Tài khoản Hosting',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -122,7 +122,7 @@ const router = createRouter({
           name: 'Customer',
           component: () => import('@/views/dashboard/examples/management/User.vue'),
           meta: {
-            title: 'Customer',
+            title: 'Khách hàng',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -130,7 +130,7 @@ const router = createRouter({
           name: 'invoice',
           component: () => import('@/views/dashboard/examples/management/Invoice.vue'),
           meta: {
-            title: 'Invoice',
+            title: 'Hóa đơn',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -138,7 +138,7 @@ const router = createRouter({
           name: 'order',
           component: () => import('@/views/dashboard/examples/management/Order.vue'),
           meta: {
-            title: 'Order',
+            title: 'Đơn hàng',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -146,7 +146,7 @@ const router = createRouter({
           name: 'contract',
           component: () => import('@/views/dashboard/examples/management/Contract.vue'),
           meta: {
-            title: 'Contract',
+            title: 'Hợp đồng',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -170,7 +170,7 @@ const router = createRouter({
   ]
 });
 
-router.beforeEach((to,from) => {
+router.beforeEach((to, from) => {
   document.title = to.meta.title as string;
 })
 

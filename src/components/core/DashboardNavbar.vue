@@ -54,7 +54,7 @@ const toggleMode = () => {
         <MoonStar v-else />
       </Button>
       <div class="border-x-[1px] border-gray-300 h-[24px] w-[1px] mx-2"></div>
-      <DropdownMenu>
+      <!-- <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline" class="border-0 flex items-center max-w-[200px] w-full justify-start">
             <Avatar class="h-8 w-8">
@@ -80,7 +80,7 @@ const toggleMode = () => {
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> -->
     </div>
   </nav>
 </template>

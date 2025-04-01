@@ -97,7 +97,7 @@ onMounted(fetchDomains);
         <Input type="number" id="price" v-model.number="form.price_start" required />
       </div>
       <div class="grid gap-y-2">
-        <label for="price">Giá duy trì theo năm</label>
+        <label for="price">Giá duy trì </label>
         <Input type="number" id="price" v-model.number="form.price" required />
       </div>
       <div class="grid gap-y-2">

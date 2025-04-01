@@ -9,34 +9,20 @@ import Overview from '@/components/examples/Overview.vue';
 
 <template>
   <div>
-    <page-header title="Dashboard">
+    <page-header title="Báo cáo thống kê">
       <div class="flex items-center space-x-2">
         <DateRangePicker />
-        <Button>Download</Button>
+        <Button>Tải xuống</Button>
       </div>
     </page-header>
 
     <Tabs default-value="overview" class="space-y-4">
-      <TabsList>
-        <TabsTrigger value="overview">
-          Overview
-        </TabsTrigger>
-        <TabsTrigger value="analytics">
-          Analytics
-        </TabsTrigger>
-        <TabsTrigger value="reports">
-          Reports
-        </TabsTrigger>
-        <TabsTrigger value="notifications">
-          Notifications
-        </TabsTrigger>
-      </TabsList>
       <TabsContent value="overview" class="space-y-4">
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle class="text-sm font-medium">
-                Total Revenue
+                Thu nhập
               </CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -53,17 +39,17 @@ import Overview from '@/components/examples/Overview.vue';
             </CardHeader>
             <CardContent>
               <div class="text-2xl font-bold">
-                $45,231.89
+                45.000.000 VNĐ
               </div>
               <p class="text-xs text-muted-foreground">
-                +20.1% from last month
+                +10% so với tháng trước
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle class="text-sm font-medium">
-                Subscriptions
+                Số đơn hàng
               </CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -82,17 +68,17 @@ import Overview from '@/components/examples/Overview.vue';
             </CardHeader>
             <CardContent>
               <div class="text-2xl font-bold">
-                +2350
+                +100
               </div>
               <p class="text-xs text-muted-foreground">
-                +180.1% from last month
+                +18% so với tháng trước
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle class="text-sm font-medium">
-                Sales
+                Khách hàng
               </CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -113,14 +99,14 @@ import Overview from '@/components/examples/Overview.vue';
                 +12,234
               </div>
               <p class="text-xs text-muted-foreground">
-                +19% from last month
+                +19% so với tháng trước
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle class="text-sm font-medium">
-                Active Now
+                Hợp đồng đã ký kết
               </CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -137,10 +123,10 @@ import Overview from '@/components/examples/Overview.vue';
             </CardHeader>
             <CardContent>
               <div class="text-2xl font-bold">
-                +573
+                +90
               </div>
               <p class="text-xs text-muted-foreground">
-                +201 since last hour
+                +10 so với tháng trước
               </p>
             </CardContent>
           </Card>
@@ -148,21 +134,10 @@ import Overview from '@/components/examples/Overview.vue';
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
           <Card class="col-span-4">
             <CardHeader>
-              <CardTitle>Overview</CardTitle>
+              <CardTitle>ĐÁNH GIÁ TỔNG QUAN</CardTitle>
             </CardHeader>
             <CardContent class="pl-2">
               <Overview />
-            </CardContent>
-          </Card>
-          <Card class="col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Sales</CardTitle>
-              <CardDescription>
-                You made 265 sales this month.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RecentSales />
             </CardContent>
           </Card>
         </div>

@@ -107,6 +107,11 @@ const columns: ColumnDef<any>[] = [
           { variant: 'destructive', onClick: () => deleteCustomer(row.original.id) },
           () => 'Xóa'
         ),
+        h(
+          Button,
+          { variant: 'outline', class: 'mr-2', onClick: () => editCustomer(row.original) },
+          () => 'Xem hợp đồng'
+        ),
       ]),
   },
 ];

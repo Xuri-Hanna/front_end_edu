@@ -116,7 +116,7 @@ const columns: ColumnDef<any>[] = [
               variant: "outline",
               onClick: () => approveInvoice(invoice.id),
             },
-            () => "Chấp thuận"
+            () => "Lập hợp đồng"
           ),
           h(
             Button,
