@@ -4,7 +4,15 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
-
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { handleError, handleSucess } from '@/lib/utils';
 // Danh sách tài khoản hosting
 const hostingAccounts = ref([]);
 const hostingProducts  = ref([]);
@@ -49,7 +57,7 @@ const fetchHostingProducts = async () => {
     hostingProducts.value = response.data;
     console.log('hosting_product',hostingProducts.value);
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách hosting:', error);
+    handleError(error);
   }
 };
 
@@ -60,7 +68,7 @@ const fetchHostingAccounts = async () => {
     hostingAccounts.value = response.data;
     console.log('data_account', hostingAccounts.value);
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách hosting account:', error);
+    handleError(error);
   }
 };
 
@@ -69,13 +77,15 @@ const submitForm = async () => {
   try {
     if (form.value.id) {
       await axios.put(`http://127.0.0.1:8000/api/hosting_accounts/${form.value.id}`, form.value);
+      handleSucess("Thành công","Sửa tài khoản hosting thành công");
     } else {
       await axios.post('http://127.0.0.1:8000/api/hosting_accounts', form.value);
+      handleSucess("Thành công","Thêm tài khoản hosting thành công");
     }
     form.value = { hosting_id: '', username: '', password: '', control_panel: '' };
     fetchHostingAccounts();
   } catch (error) {
-    console.error('Lỗi khi lưu hosting account:', error);
+    handleError(error);
   }
 };
 
@@ -90,7 +100,7 @@ const deleteAccount = async (id) => {
     await axios.delete(`http://127.0.0.1:8000/api/hosting_accounts/${id}`);
     fetchHostingAccounts();
   } catch (error) {
-    console.error('Lỗi khi xóa hosting account:', error);
+    handleError(error);
   }
 };
 
@@ -106,13 +116,19 @@ onMounted(async () => {
 
     <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
       <div class="grid gap-y-2">
-        <label for="hosting_id">Chọn Hosting</label>
-        <select v-model="form.hosting_id" class="border p-2">
-          <option value="">Chọn Hosting</option>
-          <option v-for="hosting in hostingProducts" :key="hosting.id" :value="hosting.id">
-            {{ hosting.plan }}
-          </option>
-        </select>
+        <label for="hosting_id" class="block text-sm font-medium">Chọn hosting</label>
+        <Select v-model="form.hosting_id">
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn hosting" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem v-for="hosting in hostingProducts" :key="hosting.id" :value="hosting.id">
+                {{ hosting.plan }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       <div class="grid gap-y-2">

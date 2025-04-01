@@ -6,7 +6,14 @@ import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Pencil, Trash, Check, X } from 'lucide-vue-next';
 import axios from 'axios';
-
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 const orders = ref([]);
 const discountValue = ref(0);
 
@@ -399,27 +406,42 @@ onMounted(async () => {
         <Label for="dia_chi">Địa chỉ</Label>
         <Input type="text" id="dia_chi" v-model="form.dia_chi" required />
       </div>
-
-      <!-- Chọn loại dịch vụ -->
       <div class="grid gap-y-2">
-        <Label for="service_type">Loại dịch vụ</Label>
-        <select id="service_type" v-model="form.service_type" required class="border p-2 rounded">
-          <option value="">Chọn loại dịch vụ</option>
-          <option value="domain">Domain</option>
-          <option value="hosting">Hosting</option>
-          <option value="vps">VPS</option>
-        </select>
+        <label for="service_type" class="block text-sm font-medium">Loại dịch vụ</label>
+        <Select v-model="form.service_type" >
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn loại dịch vụ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="domain">
+                Domain
+              </SelectItem>
+              <SelectItem value="hosting">
+                Hosting
+              </SelectItem>
+              <SelectItem value="vps">
+                Vps
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
-
       <!-- Chọn mã dịch vụ dựa trên loại dịch vụ -->
       <div class="grid gap-y-2">
-        <Label for="service_id">Mã Dịch Vụ</Label>
-        <select v-model.number="form.service_id" :disabled="serviceOptions.length === 0" class="border p-2 rounded">
-          <option value="">Chọn mã dịch vụ</option>
-          <option v-for="service in serviceOptions" :key="service.id" :value="service.id">
-            {{ service.name }}
-          </option>
-        </select>
+        <label for="service_id" class="block text-sm font-medium">Loại dịch vụ</label>
+        <Select v-model="form.service_type" :disabled="serviceOptions.length === 0">
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn mã dịch vụ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem v-for="service in serviceOptions" :key="service.id" :value="service.id">
+                {{ service.name }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
       <div class="grid gap-y-2">
         <Label for="duration_months">Thời hạn thuê (tháng)</Label>
@@ -434,12 +456,25 @@ onMounted(async () => {
         <span class="border p-2 rounded bg-gray-100">{{ form.total_price }}</span>
       </div>
       <div class="grid gap-y-2">
-        <Label for="status">Trạng thái</Label>
-        <select id="status" v-model="form.status" required class="border p-2 rounded">
-          <option value="pending">Chờ xử lý</option>
-          <option value="paid">Đã chấp thuận</option>
-          <option value="cancelled">Đã hủy</option>
-        </select>
+        <label for="status" class="block text-sm font-medium">Trạng thái </label>
+        <Select v-model="form.status" >
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn loại dịch vụ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="pending">
+                Chờ xử lý
+              </SelectItem>
+              <SelectItem value="paid">
+                Đã chấp thuận
+              </SelectItem>
+              <SelectItem value="cancelled">
+                Đã hủy
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
       <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Đơn Hàng</Button>
     </form>

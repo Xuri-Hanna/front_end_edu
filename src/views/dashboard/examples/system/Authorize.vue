@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { handleError, handleSucess } from '@/lib/utils';
 
 // Danh sách nhân viên, quyền, và phân quyền
 const phanQuyenList = ref([]);
@@ -31,7 +32,7 @@ const fetchPhanQuyen = async () => {
     const response = await axios.get('http://localhost:8000/api/phan_quyens');
     phanQuyenList.value = response.data;
   } catch (error) {
-    console.error('Lỗi khi tải danh sách phân quyền', error);
+    handleError(error);
   }
 };
 
@@ -41,7 +42,7 @@ const fetchTaiKhoan = async () => {
     const response = await axios.get('http://localhost:8000/api/tai_khoans');
     taiKhoanList.value = response.data;
   } catch (error) {
-    console.error('Lỗi khi tải danh sách tài khoản', error);
+    handleError(error);
   }
 };
 
@@ -51,7 +52,7 @@ const fetchQuyen = async () => {
     const response = await axios.get('http://localhost:8000/api/quyens');
     quyenList.value = response.data;
   } catch (error) {
-    console.error('Lỗi khi tải danh sách quyền', error);
+    handleError(error);
   }
 };
 
@@ -59,14 +60,15 @@ const fetchQuyen = async () => {
 const onSubmit = async () => {
   try {
     if (editMode.value) {
-      await axios.put(`http://localhost:8000/api/phan_quyens/${form.value.ma_phan_quyen}`, form.value); // ✅ Sửa ID đúng
+      await axios.put(`http://localhost:8000/api/phan_quyens/${form.value.ma_phan_quyen}`, form.value);
     } else {
       await axios.post('http://localhost:8000/api/phan_quyens', form.value);
     }
+    handleSucess("Thành công","Phân quyền thành công");
     clearData();
     fetchPhanQuyen();
   } catch (error) {
-    console.error('Lỗi khi gửi dữ liệu', error);
+    handleError(error);
   }
 };
 
@@ -75,9 +77,10 @@ const deletePhanQuyen = async (id: number) => {
   if (confirm('Bạn có chắc chắn muốn xóa phân quyền này?')) {
     try {
       await axios.delete(`http://localhost:8000/api/phan_quyens/${id}`);
+      handleSucess("Thành công","Hủy phân quyền thành công");
       fetchPhanQuyen();
     } catch (error) {
-      console.error('Lỗi khi xóa phân quyền', error);
+      handleError(error);
     }
   }
 };

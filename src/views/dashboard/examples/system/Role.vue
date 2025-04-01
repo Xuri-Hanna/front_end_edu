@@ -5,6 +5,7 @@ import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import Label from '@/components/ui/label/Label.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Input } from '@/components/ui/input';
+import { handleError, handleSucess } from '@/lib/utils';
 
 const quyenList = ref([]);
 const editMode = ref(false);
@@ -19,7 +20,7 @@ const fetchQuyen = async () => {
     const response = await axios.get('http://127.0.0.1:8000/api/quyens');
     quyenList.value = response.data;
   } catch (error) {
-    console.error('Lỗi khi tải danh sách quyền', error);
+    handleError(error);
   }
 };
 
@@ -28,13 +29,15 @@ const onSubmit = async () => {
   try {
     if (editMode.value) {
       await axios.put(`http://127.0.0.1:8000/api/quyens/${form.value.ma_quyen}`, form.value);
+      handleSucess("Thành công","Sửa quyền thành công");
     } else {
       await axios.post('http://127.0.0.1:8000/api/quyens', form.value);
+      handleSucess("Thành công","Thêm quyền thành công");
     }
     clearData();
     fetchQuyen();
   } catch (error) {
-    console.error('Lỗi khi gửi dữ liệu', error);
+    handleError(error);
   }
 };
 
@@ -43,9 +46,10 @@ const deleteQuyen = async (id: number) => {
   if (confirm('Bạn có chắc chắn muốn xóa quyền này?')) {
     try {
       await axios.delete(`http://127.0.0.1:8000/api/quyens/${id}`);
+      handleSucess("Thành công","Xóa quyền thành công");
       fetchQuyen();
     } catch (error) {
-      console.error('Lỗi khi xóa quyền', error);
+      handleError(error);
     }
   }
 };

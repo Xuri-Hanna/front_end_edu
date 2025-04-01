@@ -4,7 +4,15 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
-
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { handleError, handleSucess } from '@/lib/utils';
 // Danh sách tài khoản VPS
 const vpsAccounts = ref([]);
 const vpsProducts = ref([]);
@@ -51,7 +59,7 @@ const fetchVpsProducts = async () => {
     const response = await axios.get('http://127.0.0.1:8000/api/vps_products');
     vpsProducts.value = response.data;
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách VPS:', error);
+    handleError(error);
   }
 };
 
@@ -61,7 +69,7 @@ const fetchVpsAccounts = async () => {
     const response = await axios.get('http://127.0.0.1:8000/api/vps_accounts');
     vpsAccounts.value = response.data;
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách VPS account:', error);
+    handleError(error);
   }
 };
 
@@ -70,13 +78,15 @@ const submitForm = async () => {
   try {
     if (form.value.id) {
       await axios.put(`http://127.0.0.1:8000/api/vps_accounts/${form.value.id}`, form.value);
+      handleSucess("Thành công","Sửa tài khoản vps thành công");
     } else {
       await axios.post('http://127.0.0.1:8000/api/vps_accounts', form.value);
+      handleSucess("Thành công","Thêm tài khoản vps thành công");
     }
     form.value = { vps_id: '', ip_address: '', username: '', password: '', os: '' };
     fetchVpsAccounts();
   } catch (error) {
-    console.error('Lỗi khi lưu VPS account:', error);
+    handleError(error);
   }
 };
 
@@ -91,7 +101,7 @@ const deleteAccount = async (id) => {
     await axios.delete(`http://127.0.0.1:8000/api/vps_accounts/${id}`);
     fetchVpsAccounts();
   } catch (error) {
-    console.error('Lỗi khi xóa VPS account:', error);
+    handleError(error);
   }
 };
 
@@ -107,13 +117,19 @@ onMounted(async () => {
 
     <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
       <div class="grid gap-y-2">
-        <label for="vps_id">Chọn VPS</label>
-        <select v-model="form.vps_id" class="border p-2">
-          <option value="">Chọn VPS</option>
-          <option v-for="vps in vpsProducts" :key="vps.id" :value="vps.id">
-            {{ vps.plan }}
-          </option>
-        </select>
+        <label for="vps_id" class="block text-sm font-medium">Chọn vps</label>
+        <Select v-model="form.vps_id">
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn vps" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem v-for="vps in vpsProducts" :key="vps.id" :value="vps.id">
+                {{ vps.plan }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       <div class="grid gap-y-2">

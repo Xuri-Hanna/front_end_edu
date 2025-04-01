@@ -10,7 +10,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-vue-next";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { OpenSansFont } from "@/assets/font/vietfont";
 import {
   Select,
@@ -318,12 +317,11 @@ const generatePDF = (invoice: any, order: any, account: any, customer : any) => 
     doc.text("Quét mã QR để thanh toán:", 20, 140);
     doc.addImage(qrImage.value, "PNG", 20, 150, 50, 50);
   }
-
   doc.save(`invoice_${invoice.id}.pdf`);
 };
 const sendInvoiceEmail = async (invoiceId: number) => {
   try {
-    const response = await axios.post(`http://127.0.0.1:8000/api/invoices/${invoiceId}/send-email`);
+    const response = await axios.post(`http://127.0.0.1:8000/api/send-email/${invoiceId}`);
     alert(response.data.message);
   } catch (error) {
     console.error("🔥 Lỗi khi gửi email:", error);
