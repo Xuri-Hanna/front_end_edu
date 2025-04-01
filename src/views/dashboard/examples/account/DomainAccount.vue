@@ -4,7 +4,15 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
-
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { handleError, handleSucess } from '@/lib/utils';
 // Danh sách tài khoản domain
 const domainAccounts = ref([]);
 const domainProducts = ref([]);
@@ -50,7 +58,7 @@ const fetchDomainProducts = async () => {
     domainProducts.value = response.data;
     console.log(response.data);
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách domain:', error);
+    handleError(error);
   }
 };
 
@@ -61,7 +69,7 @@ const fetchDomainAccounts = async () => {
     domainAccounts.value = response.data;
     console.log(response.data);
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách domain account:', error);
+    handleError(error);
   }
 };
 
@@ -70,13 +78,15 @@ const submitForm = async () => {
   try {
     if (form.value.id) {
       await axios.put(`http://127.0.0.1:8000/api/domain_accounts/${form.value.id}`, form.value);
+      handleSucess("Thành công","Sửa tài khoản domain thành công");
     } else {
       await axios.post('http://127.0.0.1:8000/api/domain_accounts', form.value);
+      handleSucess("Thành công","Thêm tài khoản domain thành công");
     }
     form.value = { domain_id: '', registrar_panel: '', username: '', password: '' };
     fetchDomainAccounts();
   } catch (error) {
-    console.error('Lỗi khi lưu domain account:', error);
+    handleError(error);
   }
 };
 
@@ -91,7 +101,7 @@ const deleteAccount = async (id) => {
     await axios.delete(`http://127.0.0.1:8000/api/domain_accounts/${id}`);
     fetchDomainAccounts();
   } catch (error) {
-    console.error('Lỗi khi xóa domain account:', error);
+    handleError(error);
   }
 };
 
@@ -106,16 +116,22 @@ onMounted(async () => {
     <h1 class="text-lg font-bold mb-4">Quản lý Tài khoản Domain</h1>
 
     <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
-      <div class="grid gap-y-2">
-        <label for="domain_id">Chọn Domain</label>
-        <select v-model="form.domain_id" class="border p-2">
-          <option value="">Chọn Domain</option>
-          <option v-for="domain in domainProducts" :key="domain.id" :value="domain.id">
-            {{ domain.domain_name }}
-          </option>
-        </select>
-      </div>
 
+      <div class="grid gap-y-2">
+        <label for="domain_id" class="block text-sm font-medium">Chọn Domain</label>
+        <Select v-model="form.domain_id">
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn domain" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem v-for="domain in domainProducts" :key="domain.id" :value="domain.id">
+                {{ domain.domain_name }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
       <div class="grid gap-y-2">
         <label for="registrar_panel">Bảng điều khiển</label>
         <Input type="text" id="registrar_panel" v-model="form.registrar_panel" required />

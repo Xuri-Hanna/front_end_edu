@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { handleError, handleSucess } from '@/lib/utils';
 
 interface StatusType {
   tag: string;
@@ -50,7 +51,7 @@ const fetchTaiKhoan = async () => {
       status: nv.status === "Kích hoạt" ? "active" : "none" // Đảm bảo dữ liệu chuẩn hóa
     }));
   } catch (error) {
-    console.error('Lỗi khi tải danh sách nhân viên', error);
+    handleError(error);
   }
 };
 
@@ -63,15 +64,17 @@ const onSubmit = async () => {
       await axios.put(`http://127.0.0.1:8000/api/tai_khoans/${form.value.ma_nhan_vien}`, {
         ...form.value,
       });
+      handleSucess("Thành công","Sửa tài khoản thành công");
     } else {
       await axios.post('http://127.0.0.1:8000/api/tai_khoans', {
         ...form.value,
       });
+      handleSucess("Thành công","Thêm tài khoản thành công");
     }
     clearData();
     fetchTaiKhoan();
   } catch (error) {
-    console.error('Lỗi khi gửi dữ liệu', error);
+    handleError(error);
   }
 };
 
@@ -82,9 +85,10 @@ const deleteTaiKhoan = async (id: number) => {
   if (confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
     try {
       await axios.delete(`http://127.0.0.1:8000/api/tai_khoans/${id}`);
+      handleSucess("Thành công","Xóa tài khoản thành công");
       fetchTaiKhoan();
     } catch (error) {
-      console.error('Lỗi khi xóa tài khoản', error);
+      handleError(error);
     }
   }
 };
