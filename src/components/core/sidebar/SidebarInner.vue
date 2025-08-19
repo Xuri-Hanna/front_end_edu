@@ -11,42 +11,75 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import router from '@/router';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { APP_MENU } from '@/config/app';
+
+import { getMenuByRole } from '@/config/app';
+
 import { ArrowLeftToLine } from 'lucide-vue-next';
 import { useAppStore } from '@/stores/app';
+
+import { useAuthStore } from '@/stores/auths';
+
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import Icon from '@/components/ui/Icon.vue';
+
 const route = useRoute()
+const authStore = useAuthStore();
 
-const menus = computed(() => Object.entries(APP_MENU).map(([key, value]) => ({
 
+const menus = computed(() => {
+  if (!authStore.role) return []
+  const roleMenu = getMenuByRole(authStore.role)
+
+  const prefix =
+    authStore.role === 'admin' ? '/admin' :
+    authStore.role === 'staff' ? '/staff' :
+    authStore.role === 'teacher' ? '/teacher' :
+    ''
+
+  return Object.entries(roleMenu).map(([key, value]) => ({
     key,
     name: value.name,
-    icon : value.icon,
+    icon: value.icon,
     routes: value.children.map((r) => ({
       ...r,
-      active: `/dashboard/${r.path}` === route.path,
-    })),
-  })
-));
+      fullPath: `${prefix}/${r.path}`,
+      active: `${prefix}/${r.path}` === route.path,
 
-const handleNavigate = (path: string) => {
-  if(route.fullPath.includes(`/cart/${route.params.id}`)){
-    router.push(route.fullPath.replace(`/cart/${route.params.id}`,"") + `/${path}`);
-  }
-  else{
-    router.push(path);
-  }
-  console.log(path);
+      // active: `/dashboard/${r.path}` === route.path,
+    })),
+  }))
+
+})
+
+
+// const handleNavigate = (path: string) => {
+//   if(route.fullPath.includes(`/cart/${route.params.id}`)){
+//     router.push(route.fullPath.replace(`/cart/${route.params.id}`,"") + `/${path}`);
+//   }
+//   else{
+//     router.push(`/dashboard/${path}`);
+//   }
+//   console.log(path);
   
+//   if (window.innerWidth < 1025) {
+//     store.toggleSidebar();
+//   }
+// };
+
+
+const handleNavigate = (fullPath: string) => {
+  router.push(fullPath)
+
   if (window.innerWidth < 1025) {
     store.toggleSidebar();
   }
-};
+}
+
+
 
 const store = useAppStore();
 
@@ -64,7 +97,7 @@ const toggleSidebar = () => {
             <transition name="fade">
               <h2 v-show="store.sidebarExpanded" class="text-2xl font-semibold flex items-center">
                 <span class="text-foreground "><span class="mr-2 flex items-center"><Icon name="Boxes" /></span></span>
-                ABSolTech
+                Tinh Hoa Việt
               </h2>
             </transition>
             <Button
@@ -113,7 +146,7 @@ const toggleSidebar = () => {
                         <Icon :name="child.icon" />
                       </span>
                         <transition name="fade" :duration="300">
-                          <span v-show="store.sidebarExpand">{{ child.title }}</span>
+                          <span v-show="store.sidebarExpanded">{{ child.title }}</span>   
                         </transition>
                       </Toggle>
           
@@ -131,6 +164,10 @@ const toggleSidebar = () => {
             </CollapsibleContent>
             </Collapsible>
           </div>
+
+
+
+
           <!-- <div class="border-b-[1px] transition-all" :class="store.sidebarExpanded ? 'p-4' : 'p-2'">
             <p
               v-show="store.sidebarExpanded"
@@ -190,6 +227,10 @@ const toggleSidebar = () => {
               </li>
             </ul>
           </div> -->
+
+
+
+
         </ScrollArea>
       </div>
 

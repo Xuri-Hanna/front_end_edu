@@ -1,6 +1,27 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/stores/auths';
 import { RouterLink } from 'vue-router';
+import { computed, onMounted } from 'vue';
+
+const authStore = useAuthStore();
+
+// Nếu reload trang mà store trống → lấy từ localStorage
+onMounted(() => {
+  if (!authStore.role) {
+    authStore.role = localStorage.getItem('role');
+  }
+});
+
+// Xác định đường dẫn home theo role
+const homePath = computed(() => {
+  switch (authStore.role) {
+    case 'CV01': return '/admin/dashboard';
+    case 'CV02': return '/staff/dashboard';
+    case 'CV03': return '/teacher/dashboard';
+    default:     return '/login'; // fallback nếu chưa đăng nhập
+  }
+});
 </script>
 
 <template>
@@ -9,7 +30,7 @@ import { RouterLink } from 'vue-router';
       <h2 class="font-bold text-8xl text-center">404</h2>
       <h3 class="font-medium text-2xl text-center my-2">Not Found</h3>
       <p class="text-center text-foreground/30 text-sm">The page you're trying to access <br/> could not be found</p>
-      <RouterLink to="/dashboard/home">
+      <RouterLink :to="homePath">
         <Button class="mt-4" variant="outline" prepend-icon="ArrowLeft">Back to Home</Button>
       </RouterLink>
     </div>

@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Hosting from "../service/Hosting.vue";
 
 
 // Danh sách hóa đơn từ API
@@ -45,8 +44,40 @@ const fetchInvoices = async () => {
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
   { accessorKey: "id", header: "Mã hóa đơn" },
-  { accessorKey: "user_id", header: "Mã khách hàng" },
-  { accessorKey: "order_id", header: "Mã đơn hàng" },
+  { accessorKey: "user_id", header: "Mã khách hàng",
+    cell: ({ row }) => {
+        const userId = row.original.user_id;
+        return h("div", { class: "flex items-center space-x-2" }, [
+          h("span", userId),
+          h(
+            Button,
+            {
+              variant: "outline",
+              size: "sm",
+              onClick: () => fetchCustomerInfo(userId),
+            },
+            () => "👁"
+          ),
+        ]);
+      },
+   },
+  { accessorKey: "order_id", header: "Mã đơn hàng",
+    cell: ({ row }) => {
+      const orderId = row.original.order_id;
+      return h("div", { class: "flex items-center space-x-2" }, [
+        h("span", orderId),
+        h(
+          Button,
+          {
+            variant: "outline",
+            size: "sm",
+            onClick: () => fetchOrderInfo(orderId),
+          },
+          () => "👁"
+        ),
+      ]);
+    },
+   },
   { accessorKey: "amount", header: "Tổng tiền" },
   {
     accessorKey: "issued_at",
@@ -113,7 +144,6 @@ const columns: ColumnDef<any>[] = [
             Button,
             {
               variant: "outline",
-              onClick: () => approveInvoice(invoice.id),
             },
             () => "Lập hợp đồng"
           ),
@@ -188,6 +218,50 @@ const deleteInvoice = async (id: number) => {
     console.error("Lỗi khi xóa hóa đơn:", error);
   }
 };
+// HIỂN THỊ THÔNG TIN KHÁCH HÀNG
+const showCustomerPopup = ref(false);
+const customerInfo = ref<any>(null);
+
+const fetchCustomerInfo = async (userId: number) => {
+  if (!userId) {
+    alert("Mã khách hàng không hợp lệ!");
+    return;
+  }
+
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/api/customers/${userId}`);
+    customerInfo.value = response.data;
+    showCustomerPopup.value = true;
+  } catch (error) {
+    console.error("🔥 Lỗi lấy thông tin khách hàng:", error);
+    alert("Không tìm thấy thông tin khách hàng!");
+  }
+};
+
+// HIỂN THỊ THÔNG TIN ĐƠN HÀNG
+const showOrderPopup = ref(false);
+const orderInfo = ref<any>(null);
+const serviceInfor = ref<any>(null);
+
+const fetchOrderInfo = async (orderId: number) => {
+  if (!orderId) {
+    alert("Mã đơn hàng không hợp lệ!");
+    return;
+  }
+
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/api/orders/${orderId}`);
+    orderInfo.value = response.data.order;
+    serviceInfor.value = response.data.service_infor;
+    showOrderPopup.value = true;
+  } catch (error) {
+    console.error("🔥 Lỗi lấy thông tin đơn hàng:", error);
+    alert("Không tìm thấy thông tin đơn hàng!");
+  }
+};
+
+
+// XUẤT HÓA ĐƠN
 const showPopup = ref(false);
 const Accounts = ref<any[]>([]);
 const selectedAccount = ref<any>(null);
@@ -320,8 +394,9 @@ const generatePDF = (invoice: any, order: any, account: any, customer : any) => 
   doc.save(`invoice_${invoice.id}.pdf`);
 };
 const sendInvoiceEmail = async (invoiceId: number) => {
+  console.log('ID hoa don la',invoiceId);
   try {
-    const response = await axios.post(`http://127.0.0.1:8000/api/send-email/${invoiceId}`);
+    const response = await axios.post(`http://127.0.0.1:8000/api/send_email/${invoiceId}`);
     alert(response.data.message);
   } catch (error) {
     console.error("🔥 Lỗi khi gửi email:", error);
@@ -411,6 +486,43 @@ onMounted(fetchInvoices);
 
     <DataTable :columns="columns" :data="invoices" />
   </div>
+
+  <!-- Popup hiển thị thông tin khách hàng -->
+  <div v-if="showCustomerPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-5 rounded-md relative w-96">
+      <!-- Nút đóng -->
+      <button @click="showCustomerPopup = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
+        ✖
+      </button>
+
+      <h2 class="text-lg font-bold mb-4">Thông tin khách hàng</h2>
+      <p><strong>Tên:</strong> {{ customerInfo?.name }}</p>
+      <p><strong>Email:</strong> {{ customerInfo?.email }}</p>
+      <p><strong>Địa chỉ:</strong> {{ customerInfo?.dia_chi }}</p>
+      <p><strong>SĐT:</strong> {{ customerInfo?.sdt }}</p>
+
+      <Button class="mt-4" variant="outline" @click="showCustomerPopup = false">Đóng</Button>
+    </div>
+  </div>
+  <!-- Popup hiển thị thông tin đơn hàng -->
+  <div v-if="showOrderPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-5 rounded-md relative w-96">
+      <!-- Nút đóng -->
+      <button @click="showOrderPopup = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
+        ✖
+      </button>
+
+      <h2 class="text-lg font-bold mb-4">Thông tin đơn hàng</h2>
+      <p><strong>Mã đơn hàng:</strong> {{ orderInfo?.id }}</p>
+      <p><strong>Dịch vụ:</strong> {{ orderInfo?.service_type }}</p>
+      <p><strong>Giá tiền:</strong> {{ orderInfo?.total_price?.toLocaleString() }} VNĐ</p>
+      <p v-if="serviceInfor" ><strong>Gói dịch vụ</strong>{{ serviceInfor }} </p>
+
+      <Button class="mt-4" variant="outline" @click="showOrderPopup = false">Đóng</Button>
+    </div>
+  </div>
+
+
   <div v-if="showPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
   <div class="bg-white p-5 rounded-md relative">
     <!-- Nút đóng popup -->

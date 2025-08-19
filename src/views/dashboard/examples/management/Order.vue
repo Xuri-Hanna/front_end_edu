@@ -23,10 +23,6 @@ const columns: ColumnDef<any>[] = [
   { accessorKey: 'email', header: 'Email' },
   { accessorKey: 'sdt', header: 'Số điện thoại' },
   { accessorKey: 'dia_chi', header: 'Địa chỉ' },
-  // { accessorKey: 'service_id', 
-  //   header: 'Gói dịch vụ', 
-  //   cell: ({ row }) => getServiceName(row.original.service_id)
-  // },  
   { accessorKey: 'service_type', header: 'Loại dịch vụ' },
   { accessorKey: 'discount_id', header: 'Mã giảm giá' },
   { accessorKey: 'total_price', header: 'Giá' },
@@ -198,7 +194,7 @@ const createInvoice = async (order: any) => {
 
     console.log("✅ Hóa đơn đã được tạo thành công!");
   } catch (error) {
-    console.error("❌ Lỗi khi tạo hóa đơn:", error.response?.data || error);
+    console.error("❌ Lỗi khi tạo hóa đơn:",error);
   }
 };
 
@@ -319,33 +315,6 @@ const fetchOrders = async () => {
   const response = await axios.get('http://127.0.0.1:8000/api/orders');
   orders.value = response.data;
 };
-const allServices = ref<{ id: number; name: string }[]>([]);
-
-const fetchServices = async () => {
-  try {
-    const responses = await Promise.all([
-      axios.get('http://127.0.0.1:8000/api/domain_products'),
-      axios.get('http://127.0.0.1:8000/api/hosting_products'),
-      axios.get('http://127.0.0.1:8000/api/vps_products')
-    ]);
-
-    allServices.value = [
-      ...responses[0].data.map((item: any) => ({ id: item.id, name: item.domain_name })),
-      ...responses[1].data.map((item: any) => ({ id: item.id, name: item.plan })),
-      ...responses[2].data.map((item: any) => ({ id: item.id, name: item.plan }))
-    ];
-
-    console.log('Danh sách dịch vụ:', allServices.value);
-  } catch (error) {
-    console.error('Lỗi khi tải danh sách dịch vụ:', error);
-  }
-};
-const getServiceName = (id: number) => {
-  const service = allServices.value.find(service => service.id === id);
-  return service ? service.name : 'Không xác định';
-};
-
-
 
 // Gửi dữ liệu form
 const submitForm = async () => {
@@ -382,7 +351,6 @@ const deleteOrder = async (id: number) => {
 
 onMounted(async () => {
   fetchOrders();
-  await fetchServices(); // Lấy danh sách dịch vụ
 });
 
 </script>
@@ -430,7 +398,7 @@ onMounted(async () => {
       <!-- Chọn mã dịch vụ dựa trên loại dịch vụ -->
       <div class="grid gap-y-2">
         <label for="service_id" class="block text-sm font-medium">Loại dịch vụ</label>
-        <Select v-model="form.service_type" :disabled="serviceOptions.length === 0">
+        <Select v-model="form.service_id" :disabled="serviceOptions.length === 0">
           <SelectTrigger>
             <SelectValue placeholder="Chọn mã dịch vụ" />
           </SelectTrigger>
