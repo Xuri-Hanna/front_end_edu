@@ -6,12 +6,16 @@ import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
 
 // Danh sách phòng học
-const phongHocList = ref([]);
+const phongHocList = ref<any[]>([]);
+
+// Lịch sử dụng: cấu trúc { [idPhong]: { [thu]: { morning: boolean, afternoon: boolean, evening: boolean } } }
+const schedule = ref<Record<string, any>>({});
+
+// Danh sách các thứ
+const days = ['T2','T3','T4','T5','T6','T7','CN'];
 
 // Lưu lỗi validation
 const errors = reactive<Record<string, string>>({});
-
-// Lưu thông báo
 const successMessage = ref('');
 const messageType = ref<'success' | 'error'>('success');
 
@@ -27,15 +31,6 @@ const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const gia = row.original.gia_phong ?? 0;
       return new Intl.NumberFormat('vi-VN').format(gia) + ' VNĐ';
-    }
-  },
-  {
-    accessorKey: 'trang_thai',
-    header: 'Trạng thái',
-    cell: ({ row }) => {
-      const tt = row.original.trang_thai;
-      const color = tt === 'Chưa sử dụng' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold';
-      return h('span', { class: color }, tt);
     }
   },
   {
@@ -71,13 +66,22 @@ const form = ref<PhongHocPayload>({
 const fetchPhongHoc = async () => {
   const response = await axios.get('http://127.0.0.1:8000/api/phong_hocs');
   phongHocList.value = response.data;
+
+  // Khởi tạo lịch (nếu chưa có)
+  phongHocList.value.forEach((p: any) => {
+    if (!schedule.value[p.id]) {
+      schedule.value[p.id] = {};
+      days.forEach(day => {
+        schedule.value[p.id][day] = { morning: false, afternoon: false, evening: false };
+      });
+    }
+  });
 };
 
 // Validate form
 const validateForm = () => {
   Object.keys(errors).forEach(key => (errors[key] = ''));
   let isValid = true;
-
   if (!form.value.so_phong) {
     errors.so_phong = 'Số phòng là bắt buộc';
     isValid = false;
@@ -90,7 +94,7 @@ const validateForm = () => {
     errors.so_cho_ngoi = 'Số chỗ ngồi phải > 0';
     isValid = false;
   }
-  if (!form.value.gia_phong ) {
+  if (!form.value.gia_phong) {
     errors.gia_phong = 'Giá phòng là bắt buộc';
     isValid = false;
   }
@@ -149,44 +153,194 @@ const resetForm = () => {
   Object.keys(errors).forEach(key => (errors[key] = ''));
 };
 
-onMounted(fetchPhongHoc);
+//LỊCH PHÒNG HỌC
+
+// Lấy lịch phòng từ backend
+  const fetchSchedule = async () => {
+    const res = await axios.get('http://127.0.0.1:8000/api/lich_phongs');
+    const lichData = res.data;
+
+    // Reset tất cả về false trước
+    Object.keys(schedule.value).forEach(pid => {
+      days.forEach(day => {
+        schedule.value[pid][day].morning = false;
+        schedule.value[pid][day].afternoon = false;
+        schedule.value[pid][day].evening = false;
+      });
+    });
+
+    // Map dữ liệu từ DB vào schedule
+    lichData.forEach((lich: any) => {
+      if (!schedule.value[lich.phong_id]) return;
+      schedule.value[lich.phong_id][lich.thu][lich.buoi] = lich.trang_thai === 'Đang sử dụng';
+    });
+  };
+
+  const updateSchedule = async (phongId: string, day: string, slot: string, value: boolean) => {
+    try {
+      await axios.post('http://127.0.0.1:8000/api/lich_phong_updates', {
+        phong_id: phongId,
+        day: day,
+        slot: slot,
+        value: value ? 'Đang sử dụng' : 'Chưa sử dụng'
+      });
+
+      // Sau khi cập nhật, reload lại lịch từ DB để đồng bộ
+      await fetchSchedule();
+    } catch (e) {
+      console.error('Lỗi khi cập nhật lịch:', e);
+    }
+  };
+  const onCheckboxChange = (
+    event: Event,
+    phongId: string,
+    day: string,
+    slot: string
+  ) => {
+    const target = event.target as HTMLInputElement;
+    updateSchedule(phongId, day, slot, target.checked);
+  };
+// Reset lịch về chưa tick
+  const resetSchedule = async () => {
+    try {
+      await axios.post('http://127.0.0.1:8000/api/lich_phong_resets');
+      
+      // reset lại toàn bộ trong frontend
+      Object.keys(schedule.value).forEach(pid => {
+        days.forEach(day => {
+          schedule.value[pid][day].morning = false;
+          schedule.value[pid][day].afternoon = false;
+          schedule.value[pid][day].evening = false;
+        });
+      });
+
+      alert('Đã reset toàn bộ lịch');
+    } catch (e) {
+      console.error('Lỗi khi reset lịch:', e);
+    }
+  };
+
+// SCRIPT XEM PHÒNG
+const showSchedule = ref(true);
+
+const toggleSchedule = () => {
+  showSchedule.value = !showSchedule.value;
+};
+
+
+
+onMounted(async () => {
+  await fetchPhongHoc();
+  await fetchSchedule();
+});
+
 </script>
 
 <template>
-  <div>
-    <h1 class="text-lg font-bold mb-4">Quản lý Phòng học</h1>
-    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
-      <div>
-        <label>Số phòng</label>
-        <Input type="text" v-model="form.so_phong" />
-        <small v-if="errors.so_phong" class="text-red-500">{{ errors.so_phong }}</small>
-      </div>
-      <div>
-        <label>Vị trí phòng</label>
-        <Input type="text" v-model="form.vi_tri_phong" />
-        <small v-if="errors.vi_tri_phong" class="text-red-500">{{ errors.vi_tri_phong }}</small>
-      </div>
-      <div>
-        <label>Số chỗ ngồi</label>
-        <Input type="number" v-model="form.so_cho_ngoi" />
-        <small v-if="errors.so_cho_ngoi" class="text-red-500">{{ errors.so_cho_ngoi }}</small>
-      </div>
-      <div>
-        <label>Giá phòng</label>
-        <Input type="number" v-model="form.gia_phong" />
-        <small v-if="errors.gia_phong" class="text-red-500">{{ errors.gia_phong }}</small>
-      </div>
-      <div class="col-span-2 flex gap-2 mt-2">
-        <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Phòng học</Button>
-        <Button type="button" variant="outline" @click="resetForm">Reset</Button>
-      </div>
-    </form>
+  <div class="relative overflow-hidden">
+    <!-- Nút chuyển -->
+    <div class="flex justify-end mb-4">
+      <Button @click="toggleSchedule()">
+        {{ showSchedule ? 'Xem danh sách phòng' : 'Xem lịch phòng' }}
+      </Button>
+    </div>
 
-    <p v-if="successMessage" 
-       :class="messageType === 'success' ? 'text-green-500' : 'text-red-500'">
-      {{ successMessage }}
-    </p>
+    <!-- Container chứa 2 view, dùng transform để trượt -->
+    <div
+      class="flex transition-transform duration-500 ease-in-out"
+      :style="{ transform: showSchedule ? 'translateX(0%)' : 'translateX(-100%)' }"
+    >
+      <!-- View 1: Lịch phòng -->
+      <div class="w-full flex-shrink-0 pr-4">
+        <h2 class="text-lg font-bold mb-2">Lịch sử dụng phòng</h2>
+        <Button variant="destructive" class="mb-2" @click="resetSchedule">Reset Lịch</Button>
 
-    <DataTable :columns="columns" :data="phongHocList"></DataTable>
+        <table class="table-auto border-collapse border border-gray-400 w-full text-center">
+          <thead>
+            <tr>
+              <th class="border border-gray-400 px-2 py-1">Tên phòng</th>
+              <th v-for="day in days" :key="day" colspan="3" class="border border-gray-400 px-2 py-1">{{ day }}</th>
+            </tr>
+            <tr>
+              <th></th>
+              <template v-for="day in days" :key="day + '-slots'">
+                <th class="border border-gray-400">Sáng</th>
+                <th class="border border-gray-400">Chiều</th>
+                <th class="border border-gray-400">Tối</th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="phong in phongHocList" :key="phong.id">
+              <td class="border border-gray-400 px-2 py-1">{{ phong.so_phong }}</td>
+              <template v-for="day in days" :key="phong.id + '-' + day">
+                <td class="border border-gray-400">
+                  <input
+                    type="checkbox"
+                    :checked="schedule[phong.id][day].morning"
+                    @change="onCheckboxChange($event, phong.id, day, 'morning')"
+                  />
+                </td>
+                <td class="border border-gray-400">
+                  <input
+                    type="checkbox"
+                    :checked="schedule[phong.id][day].afternoon"
+                    @change="onCheckboxChange($event, phong.id, day, 'afternoon')"
+                  />
+                </td>
+                <td class="border border-gray-400">
+                  <input
+                    type="checkbox"
+                    :checked="schedule[phong.id][day].evening"
+                    @change="onCheckboxChange($event, phong.id, day, 'evening')"
+                  />
+                </td>
+              </template>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- View 2: Danh sách + form -->
+      <div class="w-full flex-shrink-0 pl-4">
+        <h1 class="text-lg font-bold mb-4">Quản lý Phòng học</h1>
+
+        <!-- Form -->
+        <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label>Số phòng</label>
+            <Input type="text" v-model="form.so_phong" />
+            <small v-if="errors.so_phong" class="text-red-500">{{ errors.so_phong }}</small>
+          </div>
+          <div>
+            <label>Vị trí phòng</label>
+            <Input type="text" v-model="form.vi_tri_phong" />
+            <small v-if="errors.vi_tri_phong" class="text-red-500">{{ errors.vi_tri_phong }}</small>
+          </div>
+          <div>
+            <label>Số chỗ ngồi</label>
+            <Input type="number" v-model="form.so_cho_ngoi" />
+            <small v-if="errors.so_cho_ngoi" class="text-red-500">{{ errors.so_cho_ngoi }}</small>
+          </div>
+          <div>
+            <label>Giá phòng</label>
+            <Input type="number" v-model="form.gia_phong" />
+            <small v-if="errors.gia_phong" class="text-red-500">{{ errors.gia_phong }}</small>
+          </div>
+          <div class="col-span-2 flex gap-2 mt-2">
+            <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Phòng học</Button>
+            <Button type="button" variant="outline" @click="resetForm">Reset</Button>
+          </div>
+        </form>
+
+        <p v-if="successMessage" :class="messageType === 'success' ? 'text-green-500' : 'text-red-500'">
+          {{ successMessage }}
+        </p>
+
+        <!-- Bảng danh sách -->
+        <DataTable :columns="columns" :data="phongHocList"></DataTable>
+      </div>
+    </div>
   </div>
 </template>
+<style></style>
