@@ -104,7 +104,7 @@ const router = createRouter({
           name: 'admin_mon_hoc',
           component: () => import('@/views/dashboard/examples/management/Subject.vue'),
           meta: {
-            title: 'Học sinh',
+            title: 'Môn học',
           } as RouteMeta & IRouteMeta
         },
         {
@@ -112,9 +112,18 @@ const router = createRouter({
           name: 'admin_nguoi_thue_phong',
           component: () => import('@/views/dashboard/examples/management/RentPeople.vue'),
           meta: {
-            title: 'Học sinh',
+            title: 'Người thuê phòng',
           } as RouteMeta & IRouteMeta
         },
+        {
+          path: 'lop_hoc',
+          name: 'admin_lop_hoc',
+          component: () => import('@/views/dashboard/examples/management/Classroom.vue'),
+          meta: {
+            title: 'Lớp học',
+          } as RouteMeta & IRouteMeta
+        },
+
 
       ]
     },

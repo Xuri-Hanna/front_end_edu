@@ -214,7 +214,6 @@ const resetForm = () => {
         });
       });
 
-      alert('Đã reset toàn bộ lịch');
     } catch (e) {
       console.error('Lỗi khi reset lịch:', e);
     }
