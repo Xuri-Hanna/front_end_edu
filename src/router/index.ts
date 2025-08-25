@@ -123,8 +123,14 @@ const router = createRouter({
             title: 'Lớp học',
           } as RouteMeta & IRouteMeta
         },
-
-
+        {
+          path: 'lich_day',
+          name: 'admin_lich_day',
+          component: () => import('@/views/dashboard/examples/management/Schedule.vue'),
+          meta: {
+            title: 'Lịch dạy',
+          } as RouteMeta & IRouteMeta
+        },
       ]
     },
     {

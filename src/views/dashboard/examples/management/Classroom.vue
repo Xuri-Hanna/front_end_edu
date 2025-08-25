@@ -661,6 +661,7 @@ onMounted(() => {
         <table class="w-full border-collapse border">
           <thead>
             <tr class="bg-gray-100 text-left">
+              <th class="border px-2 py-1">STT</th>
               <th class="border px-2 py-1">Tên</th>
               <th class="border px-2 py-1">Giới tính</th>
               <th class="border px-2 py-1">Ngày sinh</th>
@@ -670,7 +671,10 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="hs in hocSinhList" :key="hs.id">
+            <tr v-for="(hs,index) in hocSinhList" :key="hs.id">
+              <td class="border px-2 py-1 text-center">
+                {{ (currentPage - 1) * perPage + index + 1 }}
+              </td>
               <td class="border px-2 py-1">{{ hs.ho_ten }}</td>
               <td class="border px-2 py-1">{{ hs.gioi_tinh }}</td>
               <td class="border px-2 py-1">{{ hs.ngay_sinh }}</td>

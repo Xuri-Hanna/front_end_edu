@@ -157,7 +157,6 @@ export const ADMIN_MENU: Record<string, Menu> = {
 
     ]
   },
-
   management: {
     name: 'Quản lý',
     icon: 'UserCog',
