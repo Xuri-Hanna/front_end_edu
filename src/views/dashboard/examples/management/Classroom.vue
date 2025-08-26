@@ -5,7 +5,8 @@ import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
 import { Calendar } from 'lucide-vue-next';
-
+import ExcelJS, { Cell } from "exceljs";
+import { saveAs } from "file-saver";
 
 // Danh sách lớp
 const lopHocList = ref<any[]>([]);
@@ -23,6 +24,7 @@ const successMessage = ref('');
 interface LopHocPayload {
   id?: string;
   ten_lop: string;
+  nam_hoc:string;
   mon_hoc_id: string;
   giao_vien_id: string;
   ngay_bat_dau: string;
@@ -37,6 +39,7 @@ interface LopHocPayload {
 // Form mặc định
 const form = ref<LopHocPayload>({
   ten_lop: '',
+  nam_hoc: '',
   mon_hoc_id: '',
   giao_vien_id: '',
   ngay_bat_dau: '',
@@ -50,8 +53,16 @@ const form = ref<LopHocPayload>({
 
 // Cột bảng
 const columns: ColumnDef<any>[] = [
-  { accessorKey: 'id', header: 'ID' },
   { accessorKey: 'ten_lop', header: 'Tên lớp' },
+  { accessorKey: 'nam_hoc', header: 'Năm học' },
+  {
+    accessorKey: 'ngay_bat_dau',
+    header: 'Ngày bắt đầu',
+    cell: ({ row }) => {
+      const date = row.original.ngay_bat_dau;
+      return date ? new Date(date).toLocaleDateString('vi-VN') : '';
+    }
+  },
   {
     accessorKey: 'mon_hoc_id',
     header: 'Môn học',
@@ -76,7 +87,6 @@ const columns: ColumnDef<any>[] = [
       return ph ? ph.so_phong : 'N/A';
     }
   },
-  { accessorKey: 'so_luong', header: 'Số lượng' },
   { accessorKey: 'so_buoi', header: 'Số buổi' },
   { accessorKey: 'don_gia', header: 'Đơn giá',
     cell: ({ row }) => {
@@ -111,21 +121,28 @@ const columns: ColumnDef<any>[] = [
     }
   },
   {
-    accessorKey: 'actions',
+     accessorKey: 'actions',
     header: 'Hành động',
-    cell: ({ row }) =>
-      h('div', { class: 'flex gap-2' }, [
+    cell: ({ row }) => {
+      const trangThai = row.original.trang_thai;
+
+      return h('div', { class: 'flex gap-2' }, [
         h(Button, { variant: 'outline', onClick: () => editLopHoc(row.original) }, 'Sửa'),
-        h(Button, { variant: 'destructive', onClick: () => deleteLopHoc(row.original.id) }, 'Xóa'),
-        h(Button, { variant: 'default', onClick: () => fetchHocSinhTheoLop(row.original.id,1) }, 'Xem học sinh'),
+
+        // chỉ hiện nút Xóa nếu trạng thái KHÔNG phải "Đang học"
+        trangThai !== 'Đang học'
+          ? h(Button, { variant: 'destructive', onClick: () => deleteLopHoc(row.original.id) }, 'Xóa')
+          : null,
+
+        h(Button, { variant: 'default', onClick: () => fetchHocSinhTheoLop(row.original.id, 1) }, 'Xem học sinh'),
+
         h(
-        Button,
-        { size: 'icon', class: 'bg-blue-500 hover:bg-blue-600 text-white',
-        onClick: () => showSchedule(row.original)
-        },
-        () => h(Calendar, { class: 'w-4 h-4' })
-      )
-      ])
+          Button,
+          { size: 'icon', class: 'bg-blue-500 hover:bg-blue-600 text-white', onClick: () => showSchedule(row.original) },
+          () => h(Calendar, { class: 'w-4 h-4' })
+        )
+      ]);
+    }
   }
 ];
 const showForm = ref(false);
@@ -297,6 +314,66 @@ const fetchHocSinhTheoLop = async (lopHocId: string, page = 1) => {
     console.error("Lỗi khi lấy học sinh theo lớp:", err);
   }
 };
+//Xuất danh sách học sinh excel
+const exportHocSinhToExcel = async () => {
+  if (!currentLopHoc.value || hocSinhList.value.length === 0) {
+    alert("Không có dữ liệu để xuất!");
+    return;
+  }
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Danh sách học sinh");
+
+  // Tạo tiêu đề
+  worksheet.mergeCells("A1:F1");
+  worksheet.getCell("A1").value = `Danh sách học sinh - ${currentLopHoc.value.ten_lop}`;
+  worksheet.getCell("A1").alignment = { horizontal: "center" };
+  worksheet.getCell("A1").font = { bold: true, size: 14 };
+
+  // Header
+  const header = ["STT", "Họ tên", "Giới tính", "Ngày sinh", "SĐT", "Địa chỉ"];
+  worksheet.addRow(header);
+
+  // Style cho header
+  worksheet.getRow(2).eachCell((cell) => {
+    cell.font = { bold: true };
+    cell.alignment = { horizontal: "center", vertical: "middle" };
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
+  });
+
+  // Data
+  hocSinhList.value.forEach((hs, index) => {
+    worksheet.addRow([
+      index + 1,
+      hs.ho_ten,
+      hs.gioi_tinh,
+      hs.ngay_sinh,
+      hs.so_dien_thoai,
+      hs.dia_chi,
+    ]);
+  });
+
+  // Auto fit content
+  worksheet.columns.forEach((col) => {
+    let maxLength = 0;
+    col.eachCell({ includeEmpty: true }, (cell: Cell) => {
+      const len = cell.value ? cell.value.toString().length : 10;
+      if (len > maxLength) maxLength = len;
+    });
+    col.width = maxLength < 15 ? 15 : maxLength;
+  });
+
+  // Xuất file
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  saveAs(blob, `DanhSach_${currentLopHoc.value.ten_lop}.xlsx`);
+};
+
 //Phân trang
 const changePage = (page: number) => {
   if (!currentLopHoc.value) return;
@@ -478,6 +555,11 @@ onMounted(() => {
               <small v-if="errors.ten_lop" class="text-red-500">{{ errors.ten_lop }}</small>
             </div>
             <div class="grid gap-y-2">
+              <label>Năm học</label>
+              <Input type="text" v-model="form.nam_hoc" placeholder="VD: 2024-2025" />
+              <small v-if="errors.nam_hoc" class="text-red-500">{{ errors.nam_hoc }}</small>
+            </div>
+            <div class="grid gap-y-2">
               <label>Môn học</label>
               <select v-model="form.mon_hoc_id" class="border rounded p-2">
                 <option value="">-- Chọn môn --</option>
@@ -638,6 +720,7 @@ onMounted(() => {
         </div>
         <div class="flex justify-end mt-4">
           <Button variant="outline" @click="showHocSinhTable = false">Đóng</Button>
+            <Button variant="default" @click="exportHocSinhToExcel">📥 Xuất Excel</Button>
         </div>
        <!-- Hiển thị số lượng -->
       <div class="mb-4 text-sm">

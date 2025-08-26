@@ -4,6 +4,7 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
+import { computed } from "vue";
 
 // Danh sách phòng học
 const phongHocList = ref<any[]>([]);
@@ -226,6 +227,25 @@ const toggleSchedule = () => {
   showSchedule.value = !showSchedule.value;
 };
 
+const weekRange = computed(() => {
+  const today = new Date();
+
+  // Lấy thứ hiện tại (0=CN, 1=T2,..., 6=T7)
+  const day = today.getDay();
+  
+  // Trong JS: getDay() CN = 0 → mình muốn tuần bắt đầu từ T2
+  const diffToMonday = day === 0 ? -6 : 1 - day; // Nếu CN thì lùi 6 ngày, còn lại thì tính đến thứ 2
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diffToMonday);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const format = (d: Date) =>
+    d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+  return `${format(monday)} - ${format(sunday)}`;
+});
 
 
 onMounted(async () => {
@@ -251,7 +271,10 @@ onMounted(async () => {
     >
       <!-- View 1: Lịch phòng -->
       <div class="w-full flex-shrink-0 pr-4">
-        <h2 class="text-lg font-bold mb-2">Lịch sử dụng phòng</h2>
+        <h2 class="text-lg font-bold mb-2">
+          Kê hoạch sử dụng phòng
+          <span class="ml-2 text-gray-600 text-sm">({{ weekRange }})</span>
+        </h2>
         <Button variant="destructive" class="mb-2" @click="resetSchedule">Reset Lịch</Button>
 
         <table class="table-auto border-collapse border border-gray-400 w-full text-center">

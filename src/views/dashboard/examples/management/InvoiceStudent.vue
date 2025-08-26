@@ -112,7 +112,7 @@ const showHoaDonList = ref(false);
 
 const viewHoaDon = async (hocSinhId: string) => {
   const res = await axios.get(`http://127.0.0.1:8000/api/hoa_don/hoc_sinh/${hocSinhId}`);
-   console.log("API trả về:", res.data);   // debug
+  hoaDonList.value = res.data.sort((a, b) => (a.trang_thai === 'Chưa thanh toán' ? -1 : 1));
   hoaDonList.value = res.data;
   showHoaDonList.value = true;
   console.log('DU LIUE',res.data);
@@ -133,7 +133,8 @@ const deleteHoaDon = async (id: number) => {
   }
 };
 // Hàm xuất PDF
-const exportHoaDonPDF = (hd: any) => {
+const exportHoaDonPDF = async (hd: any) => {
+
   const element = document.getElementById(`hoa-don-${hd.id}`);
   if (!element) return;
 
@@ -153,6 +154,20 @@ const exportHoaDonPDF = (hd: any) => {
   };
 
   html2pdf().set(opt).from(clone).save();
+
+  // Gọi API cập nhật trạng thái
+  try {
+    const res = await axios.patch(`http://127.0.0.1:8000/api/hoa_don_hoc_phis/${hd.id}/trang_thai`);
+    // Cập nhật trạng thái trong danh sách local
+    const index = hoaDonList.value.findIndex(item => item.id === hd.id);
+    if (index !== -1) {
+      hoaDonList.value[index].trang_thai = "Đã thanh toán";
+    }
+    // Sắp xếp lại danh sách (Chưa thanh toán lên trên)
+    hoaDonList.value.sort((a, b) => a.trang_thai === "Chưa thanh toán" ? -1 : 1);
+  } catch (err) {
+    console.error("Lỗi khi cập nhật trạng thái:", err);
+  }
 };
 
 
@@ -262,6 +277,10 @@ onMounted(fetchHocSinh);
             <div class="no-print">
               <Button size="sm" variant="destructive" @click="deleteHoaDon(hd.id)">Xóa</Button>
               <Button size="sm" @click="exportHoaDonPDF(hd)">Xuất PDF</Button>
+               <p class="mt-2 font-semibold"
+                :class="hd.trang_thai === 'Chưa thanh toán' ? 'text-red-600' : 'text-green-600'">
+                Trạng thái: {{ hd.trang_thai }}
+              </p>
             </div>
             </div>
         </div>
