@@ -200,12 +200,12 @@ export const ADMIN_MENU: Record<string, Menu> = {
       {
         title: 'Hóa đơn học phí',
         icon: 'User',
-        path: ''
+        path: 'hoa_don_hoc_phi'
       },
       {
         title: 'Hóa đơn thuê phòng',
         icon: 'User',
-        path: ''
+        path: 'hoa_don_thue_phong'
       },
     ]
   },

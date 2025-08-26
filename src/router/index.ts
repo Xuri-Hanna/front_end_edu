@@ -131,6 +131,14 @@ const router = createRouter({
             title: 'Lịch dạy',
           } as RouteMeta & IRouteMeta
         },
+        {
+          path: 'hoa_don_hoc_phi',
+          name: 'admin_hoa_don_hoc_phi',
+          component: () => import('@/views/dashboard/examples/management/InvoiceStudent.vue'),
+          meta: {
+            title: 'Hóa đơn học phí',
+          } as RouteMeta & IRouteMeta
+        },
       ]
     },
     {
