@@ -50,17 +50,19 @@ interface PhongHocPayload {
   id?: string;
   so_phong: string;
   vi_tri_phong: string;
-  so_cho_ngoi: number | null;
-  gia_phong?: number | null;
+  so_cho_ngoi: number ;
+  gia_phong: number ;
   trang_thai?: string;
+  ghi_chu?: string
 }
 
 // Form nhập liệu
 const form = ref<PhongHocPayload>({
   so_phong: '',
   vi_tri_phong: '',
-  so_cho_ngoi: null,
-  gia_phong: null,
+  so_cho_ngoi: 0,
+  gia_phong: 0,
+  ghi_chu: ''
 });
 
 // Lấy danh sách phòng học
@@ -110,6 +112,7 @@ const submitForm = async () => {
   try {
     if (form.value.id) {
       await axios.put(`http://127.0.0.1:8000/api/phong_hocs/${form.value.id}`, form.value);
+      console.log(form.value)
       successMessage.value = 'Cập nhật phòng học thành công!';
       messageType.value = 'success';
     } else {
@@ -120,6 +123,7 @@ const submitForm = async () => {
     resetForm();
     fetchPhongHoc();
   } catch (err: any) {
+      console.error(err); // log thật
     successMessage.value = 'Có lỗi xảy ra, vui lòng thử lại.';
     messageType.value = 'error';
   }
@@ -226,6 +230,32 @@ const showSchedule = ref(true);
 const toggleSchedule = () => {
   showSchedule.value = !showSchedule.value;
 };
+//ghi chú phòng
+const updateNote = async (phongId: string, note: string) => {
+  try {
+    await axios.post('http://127.0.0.1:8000/api/lich_phong_note', {
+      phong_id: phongId,
+      ghi_chu: note,
+      // Nếu bạn muốn thêm thu/buoi thì truyền thêm:
+      // thu: 'T2',
+      // buoi: 'morning'
+    });
+
+    await fetchSchedule(); // reload dữ liệu
+  } catch (e) {
+    console.error('Lỗi khi cập nhật ghi chú:', e);
+  }
+};
+
+const updateAllNotesForColumn = () => {
+  phongHocList.value.forEach(phong => {
+    const noteInput = document.querySelector<HTMLInputElement>(`input[value='${phong.ghi_chu}']`);
+    if (noteInput) {
+      updateNote(phong.id, noteInput.value);
+    }
+  });
+};
+
 
 const weekRange = computed(() => {
   const today = new Date();
@@ -282,6 +312,7 @@ onMounted(async () => {
             <tr>
               <th class="border border-gray-400 px-2 py-1">Tên phòng</th>
               <th v-for="day in days" :key="day" colspan="3" class="border border-gray-400 px-2 py-1">{{ day }}</th>
+              <th class="border border-gray-400 px-2 py-1">Ghi chú</th>
             </tr>
             <tr>
               <th></th>
@@ -290,7 +321,11 @@ onMounted(async () => {
                 <th class="border border-gray-400">Chiều</th>
                 <th class="border border-gray-400">Tối</th>
               </template>
+            <th class="border border-gray-400 px-2 py-1">
+              <Button size="sm" @click="updateAllNotesForColumn">Cập nhật</Button>
+            </th>
             </tr>
+          
           </thead>
           <tbody>
             <tr v-for="phong in phongHocList" :key="phong.id">
@@ -318,6 +353,9 @@ onMounted(async () => {
                   />
                 </td>
               </template>
+              <td class="border border-gray-400 px-2 py-1">
+                {{ phong.ghi_chu || '-' }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -341,13 +379,17 @@ onMounted(async () => {
           </div>
           <div>
             <label>Số chỗ ngồi</label>
-            <Input type="number" v-model="form.so_cho_ngoi" />
+            <Input type="number" v-model.number="form.so_cho_ngoi" />
             <small v-if="errors.so_cho_ngoi" class="text-red-500">{{ errors.so_cho_ngoi }}</small>
           </div>
           <div>
             <label>Giá phòng</label>
-            <Input type="number" v-model="form.gia_phong" />
+            <Input type="number" v-model.number="form.gia_phong" />
             <small v-if="errors.gia_phong" class="text-red-500">{{ errors.gia_phong }}</small>
+          </div>
+          <div>
+            <label>Ghi chú</label>
+            <Input type="text" v-model="form.ghi_chu" />
           </div>
           <div class="col-span-2 flex gap-2 mt-2">
             <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Phòng học</Button>
