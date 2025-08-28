@@ -207,6 +207,16 @@ export const ADMIN_MENU: Record<string, Menu> = {
         icon: 'User',
         path: 'hoa_don_thue_phong'
       },
+      {
+        title: 'Hợp đồng thuê phòng',
+        icon: 'User',
+        path: 'hop_dong_thue_phong'
+      },
+      {
+        title: 'Phiếu thuê phòng',
+        icon: 'User',
+        path: 'phieu_thue_phong'
+      },
     ]
   },
   statistical: {

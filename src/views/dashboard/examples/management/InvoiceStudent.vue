@@ -182,7 +182,7 @@ onMounted(fetchHocSinh);
 
 <template>
   <div>
-    <h1 class="text-lg font-bold mb-4">Quản lý Học sinh</h1>
+    <h1 class="text-lg font-bold mb-4">Hóa đơn học phí</h1>
 
     <!-- Bảng học sinh -->
     <DataTable :columns="columns" :data="hocSinhList"></DataTable>

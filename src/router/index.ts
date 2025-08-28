@@ -139,6 +139,30 @@ const router = createRouter({
             title: 'Hóa đơn học phí',
           } as RouteMeta & IRouteMeta
         },
+        {
+          path: 'hop_dong_thue_phong',
+          name: 'admin_hop_dong_thue_phong',
+          component: () => import('@/views/dashboard/examples/management/ContractRent.vue'),
+          meta: {
+            title: 'Hợp đồng thuê phòng',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'phieu_thue_phong',
+          name: 'admin_phieu_thue_phong',
+          component: () => import('@/views/dashboard/examples/management/VoucherRental.vue'),
+          meta: {
+            title: 'Phiếu thuê phòng',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'hoa_don_thue_phong',
+          name: 'admin_hoa_don_thue_phong',
+          component: () => import('@/views/dashboard/examples/management/RentInvoice.vue'),
+          meta: {
+            title: 'Hóa đơn thuê phòng',
+          } as RouteMeta & IRouteMeta
+        },
       ]
     },
     {
