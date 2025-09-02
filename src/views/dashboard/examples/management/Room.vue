@@ -277,10 +277,21 @@ const weekRange = computed(() => {
   return `${format(monday)} - ${format(sunday)}`;
 });
 
+//Script lịch dạy
+// Danh sách lớp học đang học
+const lopHocList = ref<any[]>([]);
+
+// Lấy danh sách lớp học có lịch dạy
+const fetchLopHoc = async () => {
+  const res = await axios.get('http://127.0.0.1:8000/api/lich_day/dang_hocs');
+  lopHocList.value = res.data; // API trả về danh sách lớp + lich_days + giao_viens
+};
+
 
 onMounted(async () => {
   await fetchPhongHoc();
   await fetchSchedule();
+  await fetchLopHoc();
 });
 
 </script>
@@ -321,11 +332,7 @@ onMounted(async () => {
                 <th class="border border-gray-400">Chiều</th>
                 <th class="border border-gray-400">Tối</th>
               </template>
-            <th class="border border-gray-400 px-2 py-1">
-              <Button size="sm" @click="updateAllNotesForColumn">Cập nhật</Button>
-            </th>
             </tr>
-          
           </thead>
           <tbody>
             <tr v-for="phong in phongHocList" :key="phong.id">
@@ -356,6 +363,45 @@ onMounted(async () => {
               <td class="border border-gray-400 px-2 py-1">
                 {{ phong.ghi_chu || '-' }}
               </td>
+            </tr>
+          </tbody>
+        </table>
+      <!-- Bảng lịch dạy -->
+        <h2 class="text-lg font-bold mb-2">Lịch dạy các lớp (đang học)</h2>
+        <table class="table-auto border-collapse border border-gray-400 w-full text-center">
+          <thead>
+            <tr>
+              <th class="border border-gray-400 px-2 py-1">Lớp học</th>
+              <th class="border border-gray-400 px-2 py-1">Phòng học</th>
+              <th v-for="day in days" :key="day" colspan="3" class="border border-gray-400 px-2 py-1">{{ day }}</th>
+            </tr>
+            <tr>
+              <th></th>
+              <th></th>
+              <template v-for="day in days" :key="day + '-slots-class'">
+                <th class="border border-gray-400">Sáng</th>
+                <th class="border border-gray-400">Chiều</th>
+                <th class="border border-gray-400">Tối</th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="lop in lopHocList" :key="lop.id">
+              <td class="border border-gray-400 px-2 py-1">{{ lop.ten_lop }}</td>
+              <td class="border border-gray-400 px-2 py-1">
+                {{ lop.phong_hoc.so_phong || '-' }}
+              </td>
+              <template v-for="day in days" :key="lop.id + '-' + day">
+                <td class="border border-gray-400">
+                  <span v-if="lop.lich_days?.some(ld => ld.thu === day && ld.buoi === 'morning')" class="text-blue-600 font-bold">✔</span>
+                </td>
+                <td class="border border-gray-400">
+                 <span v-if="lop.lich_days?.some(ld => ld.thu === day && ld.buoi === 'afternoon')" class="text-blue-600 font-bold">✔</span>
+                </td>
+                <td class="border border-gray-400">
+                  <span v-if="lop.lich_days?.some(ld => ld.thu === day && ld.buoi === 'evening')" class="text-blue-600 font-bold">✔</span>
+                </td>
+              </template>
             </tr>
           </tbody>
         </table>

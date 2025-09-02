@@ -161,6 +161,10 @@ const validateForm = () => {
     errors.ten_lop = 'Tên lớp bắt buộc';
     isValid = false;
   }
+  if (!form.value.nam_hoc) {
+    errors.ten_lop = 'Năm học bắt buộc';
+    isValid = false;
+  }
   if (!form.value.mon_hoc_id) {
     errors.mon_hoc_id = 'Môn học bắt buộc';
     isValid = false;
