@@ -5,8 +5,6 @@ import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
 
-// import { useRoute } from 'vue-router';
-// const route = useRoute();
 
 
 // Danh sách giáo viên
@@ -17,6 +15,8 @@ const errors = reactive<Record<string, string>>({});
 
 // Lưu thông báo thành công
 const successMessage = ref('');
+// Lưu thông báo thất bại
+const errorMessage = ref('');
 
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
@@ -117,9 +117,16 @@ const fetchDonViList = async () => {
   }
 };
 
+const keyword = ref('')
+
 // Lấy danh sách giáo viên
 const fetchGiaoVien = async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/giao_viens');
+//  const response = await axios.get('http://127.0.0.1:8000/api/giao_viens');
+  let url = 'http://127.0.0.1:8000/api/giao_viens';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/giao_viens/search?keyword=${keyword.value}`;
+  }
+  const response = await axios.get(url);
   giaoVienList.value = response.data;
 };
 
@@ -212,8 +219,22 @@ const editGiaoVien = (gv: GiaoVienPayload) => {
 
 // Xóa giáo viên
 const deleteGiaoVien = async (id: string) => {
-  await axios.delete(`http://127.0.0.1:8000/api/giao_viens/${id}`);
-  fetchGiaoVien();
+  // await axios.delete(`http://127.0.0.1:8000/api/giao_viens/${id}`);
+  // fetchGiaoVien();
+  successMessage.value = '';
+  errorMessage.value = '';
+  if (!confirm('Bạn có chắc muốn xóa giáo viên này?')) return;
+  try {
+    const res = await axios.delete(`http://127.0.0.1:8000/api/giao_viens/${id}`);
+    successMessage.value = res.data.message;
+    fetchGiaoVien();
+  } catch (err: any) {
+    if (err.response && err.response.data.message) {
+      errorMessage.value = err.response.data.message;
+    } else {
+      errorMessage.value = 'Không thể xóa giáo viên này!';
+    }
+  }
 };
 
 // Reset form
@@ -241,13 +262,6 @@ onMounted(() => {
   fetchDonViList();
 });
 
-// watch(
-//   () => route.fullPath,
-//   () => {
-//     fetchGiaoVien();
-//   },
-//   { immediate: true }
-// );
 
 
 </script>
@@ -321,6 +335,22 @@ onMounted(() => {
 
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
+    </div>
+
+
+    <div v-if="errorMessage" class="mb-4 text-red-600 font-semibold">
+      {{ errorMessage }}
+    </div>
+
+    <div class="mb-4 flex gap-4">
+      <Input
+        type="text"
+        v-model="keyword"
+        placeholder="Tìm kiếm theo mã GV hoặc họ tên..."
+        @input="fetchGiaoVien"
+        class="flex-1"
+      />
+      <Button type="button" variant="outline" @click="fetchGiaoVien">Tìm kiếm</Button>
     </div>
 
     <DataTable :columns="columns" :data="giaoVienList"></DataTable>

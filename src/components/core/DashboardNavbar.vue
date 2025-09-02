@@ -20,6 +20,8 @@ import {
   Menu,
 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Eye, EyeOff } from 'lucide-vue-next'
 import { useAppStore } from '@/stores/app';
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -67,6 +69,65 @@ const handleLogout = async () => {
   }
 }
 
+// === ĐỔI MẬT KHẨU ===
+const showPasswordForm = ref(false)
+const passwordForm = ref({
+  old_password: '',
+  new_password: '',
+  confirm_password: ''
+})
+
+const showPassword = ref({
+  old: false,
+  new: false,
+  confirm: false
+})
+
+const errors = ref<Record<string, string>>({})
+const successMessage = ref('')
+
+const submitPasswordChange = async () => {
+  errors.value = {}
+  successMessage.value = ''
+
+  if (!passwordForm.value.old_password) {
+    errors.value.old_password = 'Vui lòng nhập mật khẩu hiện tại'
+    return
+  }
+  if (!passwordForm.value.new_password) {
+    errors.value.new_password = 'Vui lòng nhập mật khẩu mới'
+    return
+  }
+  if (passwordForm.value.new_password !== passwordForm.value.confirm_password) {
+    errors.value.confirm_password = 'Xác nhận mật khẩu không khớp'
+    return
+  }
+
+  try {
+    await axios.post('http://localhost:8000/api/change-password', {
+      username: localStorage.getItem("username"),
+      old_password: passwordForm.value.old_password,
+      new_password: passwordForm.value.new_password,
+      confirm_password: passwordForm.value.confirm_password,
+    })
+    successMessage.value = 'Đổi mật khẩu thành công!'
+    passwordForm.value = { old_password: '', new_password: '', confirm_password: '' }
+    setTimeout(() => {
+      showPasswordForm.value = false
+      successMessage.value = ''
+    }, 1500)
+  } catch (error) {
+    errors.value.old_password = 'Mật khẩu hiện tại không đúng'
+  }
+}
+
+const closePasswordForm = () => {
+  showPasswordForm.value = false
+  passwordForm.value = { old_password: '', new_password: '', confirm_password: '' }
+  errors.value = {}
+  successMessage.value = ''
+}
+
 
 </script>
 
@@ -112,18 +173,85 @@ const handleLogout = async () => {
         <DropdownMenuContent class="w-56 relative mr-4">
           <DropdownMenuLabel>{{ fullname }}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <!-- <DropdownMenuItem>
+          <DropdownMenuItem @click="showPasswordForm = true">
             <User class="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </DropdownMenuItem> -->
+            <span>Đổi mật khẩu</span>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem @click="handleLogout">
             <LogOut class="mr-2 h-4 w-4" />
-            <span>Log out</span>
+            <span>Đăng xuất</span>
             <!-- <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut> -->
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
   </nav>
+
+  <!-- FORM ĐỔI MẬT KHẨU -->
+  <transition name="slide-down">
+    <div v-if="showPasswordForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50">
+      <div class="bg-white rounded-xl shadow-lg w-1/3 mt-20 p-6">
+        <h2 class="text-lg font-bold mb-4">Đổi mật khẩu</h2>
+        <form @submit.prevent="submitPasswordChange" class="grid gap-4 mb-6">
+
+          <div class="grid gap-y-2">
+            <label>Mật khẩu hiện tại</label>
+              <div class="relative">
+                <Input :type="showPassword.old ? 'text' : 'password'" v-model="passwordForm.old_password" class="border border-gray-300 rounded-md px-2 py-1 w-full"/>
+                <button
+                  type="button"
+                  class="absolute right-2 top-2 text-gray-500"
+                  @click="showPassword.old = !showPassword.old"
+                >
+                  <Eye v-if="!showPassword.old" class="w-5 h-5" />
+                  <EyeOff v-else class="w-5 h-5" />
+                </button>
+              </div>
+            <small v-if="errors.old_password" class="text-red-500">{{ errors.old_password }}</small>
+          </div>
+
+          <div class="grid gap-y-2">
+            <label>Mật khẩu mới</label>
+              <div  class="relative">
+                <Input :type="showPassword.new ? 'text' : 'password'" v-model="passwordForm.new_password" class="border border-gray-300 rounded-md px-2 py-1 w-full"/>
+                <button
+                  type="button"
+                  class="absolute right-2 top-2 text-gray-500"
+                  @click="showPassword.new = !showPassword.new"
+                >
+                  <Eye v-if="!showPassword.new" class="w-5 h-5" />
+                  <EyeOff v-else class="w-5 h-5" />
+                </button>
+              </div>
+            <small v-if="errors.new_password" class="text-red-500">{{ errors.new_password }}</small>
+          </div>
+
+          <div class="grid gap-y-2">
+            <label>Xác nhận mật khẩu</label>
+               <div  class="relative">
+                <Input :type="showPassword.confirm ? 'text' : 'password'" v-model="passwordForm.confirm_password" class="border border-gray-300 rounded-md px-2 py-1 w-full"/>
+                <button
+                  type="button"
+                  class="absolute right-2 top-2 text-gray-500"
+                  @click="showPassword.confirm = !showPassword.confirm"
+                >
+                  <Eye v-if="!showPassword.confirm" class="w-5 h-5" />
+                  <EyeOff v-else class="w-5 h-5" />
+                </button>
+              </div>
+            <small v-if="errors.confirm_password" class="text-red-500">{{ errors.confirm_password }}</small>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <Button type="submit">Xác nhận</Button>
+            <Button type="button" variant="outline" @click="closePasswordForm">Đóng</Button>
+          </div>
+        </form>
+        <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
+          {{ successMessage }}
+        </div>
+      </div>
+    </div>
+  </transition>
+
 </template>

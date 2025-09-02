@@ -65,9 +65,16 @@ const form = ref<PhongHocPayload>({
   ghi_chu: ''
 });
 
+const keyword = ref('');
+
 // Lấy danh sách phòng học
 const fetchPhongHoc = async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/phong_hocs');
+  //const response = await axios.get('http://127.0.0.1:8000/api/phong_hocs');
+  let url = 'http://127.0.0.1:8000/api/phong_hocs';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/phong_hocs/search?keyword=${keyword.value}`;
+  }
+  const response = await axios.get(url);
   phongHocList.value = response.data;
 
   // Khởi tạo lịch (nếu chưa có)
@@ -152,8 +159,10 @@ const resetForm = () => {
   form.value = {
     so_phong: '',
     vi_tri_phong: '',
-    so_cho_ngoi: null,
-    gia_phong: null
+    so_cho_ngoi: 0,
+    gia_phong: 0
+  //  so_cho_ngoi: null,
+  //  gia_phong: null
   };
   Object.keys(errors).forEach(key => (errors[key] = ''));
 };
@@ -400,6 +409,17 @@ onMounted(async () => {
         <p v-if="successMessage" :class="messageType === 'success' ? 'text-green-500' : 'text-red-500'">
           {{ successMessage }}
         </p>
+
+        <div class="mb-4 flex gap-4">
+          <Input
+            type="text"
+            v-model="keyword"
+            placeholder="Tìm kiếm theo mã PH hoặc tên phòng..."
+            @input="fetchPhongHoc"
+            class="flex-1"
+          />
+          <Button type="button" variant="outline" @click="fetchPhongHoc">Tìm kiếm</Button>
+        </div>
 
         <!-- Bảng danh sách -->
         <DataTable :columns="columns" :data="phongHocList"></DataTable>

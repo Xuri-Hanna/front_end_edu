@@ -239,7 +239,7 @@ onMounted(() => {
           <p>- Căn cứ Văn bản hợp nhất 17/VBHN-VPQH năm 2019 Luật Thương mại do Văn phòng Quốc hội ban hành.</p>
           <p>- Căn cứ Luật Công nghệ thông tin số 67/2006/QH11 ban hành ngày 29/06/2006.</p>
           <p>- Căn cứ Luật Viễn thông số 41/2009/QH12 ban hành ngày 23/11/2009.</p>
-          <p>- Xem xét yêu cầu của khách hàng và khả năng cung cấp dịch vụ của Công ty Cổ phần Tinh Hoa Việt.</p>
+          <p>- Xem xét yêu cầu của khách hàng và khả năng cung cấp dịch vụ của Công ty TNHH thương mại và dịch vụ giáo dục và đào tạo Tinh Hoa Việt.</p>
         </div>
 
         <!-- Bảng thông tin -->
@@ -271,7 +271,7 @@ onMounted(() => {
         <table class="table-auto border border-black w-full text-sm mb-4">
           <tr>
             <td class="border px-2 py-1 w-1/3">Công ty</td>
-            <td class="border px-2 py-1">CÔNG TY CỔ PHẦN Tinh Hoa Việt</td>
+            <td class="border px-2 py-1">CÔNG TY TNHH Thương Mại và Dịch Vụ giáo dục và đào tạo Tinh Hoa Việt</td>
           </tr>
           <tr>
             <td class="border px-2 py-1">Người đại diện</td>
