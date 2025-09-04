@@ -5,10 +5,6 @@ import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
 
-// import { useRoute } from 'vue-router';
-// const route = useRoute();
-
-
 
 // Danh sách nhân viên
 const nhanVienList = ref([]);
@@ -18,6 +14,8 @@ const errors = reactive<Record<string, string>>({});
 
 // Lưu thông báo thành công
 const successMessage = ref('');
+// Lưu thông báo thất bại
+const errorMessage = ref('');
 
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
@@ -95,9 +93,16 @@ const fetchChucVuList = async () => {
   }
 };
 
+const keyword = ref('')
+
 // Lấy danh sách nhân viên
 const fetchNhanVien = async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/nhan_viens');
+  //const response = await axios.get('http://127.0.0.1:8000/api/nhan_viens');
+  let url = 'http://127.0.0.1:8000/api/nhan_viens';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/nhan_viens/search?keyword=${keyword.value}`;
+  }
+  const response = await axios.get(url);
   nhanVienList.value = response.data;
 };
 
@@ -194,9 +199,26 @@ const editNhanVien = (nv: NhanVienPayload) => {
 };
 
 // Xóa nhân viên
+// const deleteNhanVien = async (id: string) => {
+//   await axios.delete(`http://127.0.0.1:8000/api/nhan_viens/${id}`);
+//   fetchNhanVien();
+// };
+
 const deleteNhanVien = async (id: string) => {
-  await axios.delete(`http://127.0.0.1:8000/api/nhan_viens/${id}`);
-  fetchNhanVien();
+  successMessage.value = '';
+  errorMessage.value = '';
+  if (!confirm('Bạn có chắc muốn xóa nhân viên này?')) return;
+  try {
+    const res = await axios.delete(`http://127.0.0.1:8000/api/nhan_viens/${id}`);
+    successMessage.value = res.data.message;
+    fetchNhanVien();
+  } catch (err: any) {
+    if (err.response && err.response.data.message) {
+      errorMessage.value = err.response.data.message;
+    } else {
+      errorMessage.value = 'Không thể xóa nhân viên này!';
+    }
+  }
 };
 
 // Reset form
@@ -225,18 +247,12 @@ onMounted(() => {
   fetchChucVuList();
 });
 
-// watch(
-//   () => route.fullPath,
-//   () => {
-//     fetchNhanVien();
-//   },
-//   { immediate: true }
-// );
 
 </script>
 
 
 <template>
+  
   <div>
     <h1 class="text-lg font-bold mb-4">Quản lý Nhân viên</h1>
     <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
@@ -294,6 +310,22 @@ onMounted(() => {
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
     </div>
+
+    <div v-if="errorMessage" class="mb-4 text-red-600 font-semibold">
+      {{ errorMessage }}
+    </div>
+
+    <div class="mb-4 flex gap-4">
+      <Input
+        type="text"
+        v-model="keyword"
+        placeholder="Tìm kiếm theo mã NV hoặc họ tên..."
+        @input="fetchNhanVien"
+        class="flex-1"
+      />
+      <Button type="button" variant="outline" @click="fetchNhanVien">Tìm kiếm</Button>
+    </div>
+    
     <DataTable :columns="columns" :data="nhanVienList"></DataTable>
   </div>
   <!-- Popup -->

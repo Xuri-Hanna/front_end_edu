@@ -46,10 +46,16 @@ const form = ref<MonHocPayload>({
   khoi_lop: '',
   nam_hoc: ''
 });
+const keyword = ref('');
 
 // Lấy danh sách môn học
 const fetchMonHoc = async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/mon_hocs');
+  //const response = await axios.get('http://127.0.0.1:8000/api/mon_hocs');
+  let url = 'http://127.0.0.1:8000/api/mon_hocs';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/mon_hocs/search?keyword=${keyword.value}`;
+  }
+  const response = await axios.get(url);
   monHocList.value = response.data;
 };
 
@@ -160,6 +166,16 @@ onMounted(fetchMonHoc);
       :class="messageType === 'success' ? 'text-green-500' : 'text-red-500'">
       {{ successMessage }}
     </p>
+    <div class="mb-4 flex gap-4">
+      <Input
+        type="text"
+        v-model="keyword"
+        placeholder="Tìm kiếm theo mã MH hoặc họ tên..."
+        @input="fetchMonHoc"
+        class="flex-1"
+      />
+      <Button type="button" variant="outline" @click="fetchMonHoc">Tìm kiếm</Button>
+    </div>
 
 
     <DataTable :columns="columns" :data="monHocList"></DataTable>

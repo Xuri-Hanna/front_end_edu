@@ -257,17 +257,17 @@ export const STAFF_MENU: Record<string, Menu> = {
       {
         title: 'Lớp học',
         icon: 'BetweenHorizontalEnd',
-        path: ''
+        path: 'lop_hoc'
       },
       {
         title: 'Lịch dạy',
         icon: 'BetweenHorizontalEnd',
-        path: ''
+        path: 'lich_day'
       },
       {
         title: 'Phòng học',
         icon: 'BetweenHorizontalEnd',
-        path: ''
+        path: 'phong_hoc'
       },
       {
         title: 'Học sinh',
@@ -277,12 +277,12 @@ export const STAFF_MENU: Record<string, Menu> = {
       {
         title: 'Môn học',
         icon: 'BetweenHorizontalEnd',
-        path: ''
+        path: 'mon_hoc'
       },
       {
         title: 'Người thuê phòng',
         icon: 'BetweenHorizontalEnd',
-        path: ''
+        path: 'nguoi_thue_phong'
       },
     ]
   },
@@ -293,12 +293,22 @@ export const STAFF_MENU: Record<string, Menu> = {
       {
         title: 'Hóa đơn học phí',
         icon: 'User',
-        path: ''
+        path: 'hoa_don_hoc_phi'
       },
       {
         title: 'Hóa đơn thuê phòng',
         icon: 'User',
-        path: ''
+        path: 'hoa_don_thue_phong'
+      },
+      {
+        title: 'Hợp đồng thuê phòng',
+        icon: 'User',
+        path: 'hop_dong_thue_phong'
+      },
+      {
+        title: 'Phiếu thuê phòng',
+        icon: 'User',
+        path: 'phieu_thue_phong'
       },
     ]
   },
