@@ -163,6 +163,22 @@ const router = createRouter({
             title: 'Hóa đơn thuê phòng',
           } as RouteMeta & IRouteMeta
         },
+        {
+          path: 'thong_ke_thue_phong',
+          name: 'admin_thong_ke_thue_phong',
+          component: () => import('@/views/dashboard/examples/report/RentRoom.vue'),
+          meta: {
+            title: 'Thống kê tài chính',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'thong_ke_giao_duc',
+          name: 'admin_thong_ke_giao_duc',
+          component: () => import('@/views/dashboard/examples/report/Education.vue'),
+          meta: {
+            title: 'Thống kê tài chính',
+          } as RouteMeta & IRouteMeta
+        },
       ]
     },
     {

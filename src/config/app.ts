@@ -224,14 +224,14 @@ export const ADMIN_MENU: Record<string, Menu> = {
     icon: 'UserCog',
     children: [
       {
-        title: 'Thống kê học phí',
+        title: 'Thống kê thuê phòng',
         icon: 'User',
-        path: ''
+        path: 'thong_ke_thue_phong'
       },
       {
-        title: 'Thống kê học sinh',
+        title: 'Thống kê giáo dục',
         icon: 'User',
-        path: ''
+        path: 'thong_ke_giao_duc'
       },
     ]
   }

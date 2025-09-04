@@ -11,11 +11,18 @@ const hopDongList = ref<any[]>([]);
 // Modal tạo hóa đơn
 const showHoaDonModal = ref(false);
 const selectedHopDong = ref<any>(null);
+const nhanVienList = ref<any[]>([]);
+
+const fetchNhanVien = async () => {
+  const res = await axios.get("http://127.0.0.1:8000/api/nhan_viens");
+  nhanVienList.value = res.data.data ?? res.data;
+};
 
 const hoaDonForm = reactive({
   hop_dong_id: '',
   ngay_lap: '',
-  tong_tien: ''
+  tong_tien: '',
+  nhan_vien_id: ''
 });
 
 const hoaDonErrors = reactive<Record<string, string>>({});
@@ -71,6 +78,7 @@ const fetchHopDong = async () => {
 const openHoaDonModal = (hopDong: any) => {
   selectedHopDong.value = hopDong;
   hoaDonForm.hop_dong_id = hopDong.id;
+  hoaDonForm.nhan_vien_id ='';
   hoaDonForm.ngay_lap = '';
   hoaDonForm.tong_tien = '';
   showHoaDonModal.value = true;
@@ -86,6 +94,7 @@ const closeHoaDonModal = () => {
 // Submit tạo hóa đơn
 const submitHoaDon = async () => {
   try {
+     console.log("Dữ liệu gửi đi:", { ...hoaDonForm }); // kiểm tra nhan_vien_id có chưa
     const res = await axios.post('http://127.0.0.1:8000/api/hoa_don_thue_phongs', hoaDonForm);
     hoaDonSuccess.value = 'Tạo hóa đơn thành công!';
     console.log(res.data);
@@ -104,16 +113,6 @@ const viewHoaDon = async (hopDongId: string) => {
   const res = await axios.get(`http://127.0.0.1:8000/api/hoa_don_thue_phong/hop_dong/${hopDongId}`);
   hoaDonList.value = (res.data.data ?? []).sort((a, b) => (a.trang_thai === 'Chưa thanh toán' ? -1 : 1));
   showHoaDonList.value = true;
-};
-
-// Xóa hóa đơn
-const deleteHoaDon = async (id: string) => {
-  try {
-    await axios.delete(`http://127.0.0.1:8000/api/hoa_don_thue_phongs/${id}`);
-    hoaDonList.value = hoaDonList.value.filter(hd => hd.id !== id);
-  } catch (err) {
-    console.error("Lỗi khi xóa:", err);
-  }
 };
 
 // Xuất PDF
@@ -147,7 +146,11 @@ const exportHoaDonPDF = async (hd: any) => {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 
-onMounted(fetchHopDong);
+onMounted(() => {
+  fetchHopDong();
+  fetchNhanVien();
+});
+
 </script>
 
 <template>
@@ -165,6 +168,16 @@ onMounted(fetchHopDong);
             <label>Ngày lập</label>
             <Input type="date" v-model="hoaDonForm.ngay_lap" />
             <small v-if="hoaDonErrors.ngay_lap" class="text-red-500">{{ hoaDonErrors.ngay_lap }}</small>
+          </div>
+          <div>
+            <label>Người lập hóa đơn</label>
+            <select v-model="hoaDonForm.nhan_vien_id" class="border rounded w-full p-2">
+              <option value="">-- Chọn nhân viên --</option>
+              <option v-for="nv in nhanVienList" :key="nv.id" :value="nv.id">
+                {{ nv.ho_ten }}
+              </option>
+            </select>
+            <small v-if="hoaDonErrors.nhan_vien_id" class="text-red-500">{{ hoaDonErrors.nhan_vien_id }}</small>
           </div>
           <div>
             <label>Tổng tiền</label>
@@ -206,7 +219,23 @@ onMounted(fetchHopDong);
                 </p>
               </div>
             </div>
+            <div class="mt-6 text-sm">
+              <p><b>Người lập hóa đơn:</b> {{ hd.nhan_vien?.ho_ten ?? '---' }}</p>
+            </div>
 
+            <div class="flex justify-between text-center mt-12">
+              <div>
+                <p><b>Người lập hóa đơn</b></p>
+                <p class="italic text-gray-500">(Ký và ghi rõ họ tên)</p>
+                <div class="h-16"></div>
+                <p>{{ hd.nhan_vien?.ho_ten ?? '' }}</p>
+              </div>
+              <div>
+                <p><b>Người nộp tiền</b></p>
+                <p class="italic text-gray-500">(Ký và ghi rõ họ tên)</p>
+                <div class="h-16"></div>
+              </div>
+            </div>
             <div class="no-print flex justify-end gap-2 mt-2">
               <Button size="sm" @click="exportHoaDonPDF(hd)">Xuất PDF</Button>
             </div>
