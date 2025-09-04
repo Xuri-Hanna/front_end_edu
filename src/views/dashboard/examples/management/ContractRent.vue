@@ -4,9 +4,10 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
-import * as htmlDocx from "html-docx-js-typescript";
-import html2pdf from "html2pdf.js";
-
+import { saveAs } from "file-saver";
+import { QuillEditor } from "@vueup/vue-quill";
+import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import { computed } from "vue";
 
 // ================== State ==================
 const phieuList = ref<any[]>([]);
@@ -29,10 +30,62 @@ const triggerNotification = (msg: string, type: 'error' | 'success' = 'error') =
 // ================== Columns ==================
 const columns: ColumnDef<any>[] = [
   { accessorKey: 'id', header: 'Mã phiếu' },
-   {
+  {
     accessorKey: 'hop_dong_id',
     header: 'Mã hợp đồng',
-    cell: ({ row }) => row.original.hop_dong_thue_phong ? row.original.hop_dong_thue_phong.id : 'Chưa có'
+    cell: ({ row }) => {
+      const hopDong = row.original.hop_dong_thue_phong;
+      if (!hopDong) return 'Chưa có';
+
+      // Gán màu theo trạng thái
+      let colorClass = 'text-gray-600';
+      switch (hopDong.han_hop_dong) {
+        case 'Chờ':
+          colorClass = 'text-yellow-500';
+          break;
+        case 'Còn thời hạn':
+          colorClass = 'text-green-600';
+          break;
+        case 'Kết thúc':
+          colorClass = 'text-red-600';
+          break;
+        case 'Hủy':
+          colorClass = 'text-gray-400 line-through';
+          break;
+      }
+
+      // Danh sách nút nhỏ bên cạnh trạng thái
+      const buttons: any[] = [];
+      if (hopDong.han_hop_dong === 'Chờ') {
+        buttons.push(
+          h('button', {
+            class: 'ml-2 text-xs text-green-600 hover:underline',
+            onClick: () => updateTrangThai(hopDong.id, 'Còn thời hạn')
+          }, 'Kích hoạt')
+        );
+      } else if (hopDong.han_hop_dong === 'Còn thời hạn') {
+        buttons.push(
+          h('button', {
+            class: 'ml-2 text-xs text-red-600 hover:underline',
+            onClick: () => updateTrangThai(hopDong.id, 'Kết thúc')
+          }, 'Kết thúc')
+        );
+        buttons.push(
+          h('button', {
+            class: 'ml-2 text-xs text-gray-600 hover:underline',
+            onClick: () => updateTrangThai(hopDong.id, 'Hủy')
+          }, 'Hủy')
+        );
+      }
+
+      return h('div', { class: 'flex flex-col' }, [
+        h('span', {}, `#${hopDong.id}`),
+        h('div', { class: 'flex items-center gap-1' }, [
+          h('span', { class: `text-xs italic ${colorClass}` }, hopDong.han_hop_dong),
+          ...buttons
+        ])
+      ]);
+    }
   },
   {
     accessorKey: 'actions',
@@ -43,15 +96,49 @@ const columns: ColumnDef<any>[] = [
     ])
   }
 ];
+//update trạng thái
+const updateTrangThai = async (id: number, newStatus: string) => {
+  try {
+    await axios.patch(`http://127.0.0.1:8000/api/hop_dong_thue_phongs/${id}/trang_thai`, {
+      han_hop_dong: newStatus
+    });
+    triggerNotification(`Cập nhật trạng thái thành công: ${newStatus}`, 'success');
+    fetchPhieu(); // refresh lại bảng
+  } catch (error) {
+    triggerNotification('Cập nhật trạng thái thất bại!', 'error');
+  }
+};
+//lọc theo hạn hợp đồng
+// ================== Bộ lọc ==================
+const selectedHanHopDong = ref<string>("Tất cả");
 
+const filteredPhieuList = computed(() => {
+  if (selectedHanHopDong.value === "Tất cả") return phieuList.value;
+
+  return phieuList.value.filter((item) => {
+    const hopDong = item.hop_dong_thue_phong;
+    return hopDong && hopDong.han_hop_dong === selectedHanHopDong.value;
+  });
+});
 
 //=========Tạo Hợp Đồng ===========
 const showHopDongForm = ref(false);
 const selectedPhieuForHopDong = ref<any>(null);
 
 const hopDongForm = ref({
-  dieu_khoan: ''
+  dieu_khoan: '',
+  ngay_lap: ''
 });
+
+// ========= Điều khoản mặc định =========
+const DEFAULT_DIEU_KHOAN = `
+  <h3>Điều khoản hợp đồng mặc định</h3>
+  <p><b>Điều 1:</b> Bên A đồng ý cho Bên B thuê phòng theo thỏa thuận.</p>
+  <p><b>Điều 2:</b> Bên B có trách nhiệm sử dụng phòng đúng mục đích, không được tự ý chuyển nhượng.</p>
+  <p><b>Điều 3:</b> Hai bên cam kết thực hiện đúng các điều khoản đã ký.</p>
+  <p><b>Điều 4:</b> Hợp đồng có hiệu lực kể từ ngày ký.</p>
+`;
+
 
 const openCreateHopDong = async (phieu: any) => {
   try {
@@ -64,7 +151,10 @@ const openCreateHopDong = async (phieu: any) => {
     // Nếu trả về 404 nghĩa là chưa có hợp đồng
   }
   selectedPhieuForHopDong.value = phieu;
-  hopDongForm.value = { dieu_khoan: '' };
+  hopDongForm.value = {
+     dieu_khoan: DEFAULT_DIEU_KHOAN ,
+     ngay_lap: ''
+    };
   showHopDongForm.value = true;
 };
 
@@ -73,7 +163,8 @@ const submitHopDong = async () => {
   try {
     await axios.post('http://127.0.0.1:8000/api/hop_dong_thue_phongs', {
       phieu_thue_phong_id: selectedPhieuForHopDong.value.id,
-      dieu_khoan: hopDongForm.value.dieu_khoan
+      dieu_khoan: hopDongForm.value.dieu_khoan,
+      ngay_lap: hopDongForm.value.ngay_lap
     });
     showHopDongForm.value = false;
     triggerNotification('Tạo hợp đồng thành công!', 'success');
@@ -122,24 +213,57 @@ const fetchPhongHoc = async () => {
   phongHocList.value = res.data.data ?? res.data;
 };
 
-//=======Xuất hợp đồng=======
-const exportHopDongPDF = () => {
+//=======Xuất hợp đồng ra Word======= 
+const exportHopDongWord = async () => {
   const content = document.getElementById("hopdong-content");
-  if (!content) return;
+  if (!content) {
+    triggerNotification("Không tìm thấy nội dung hợp đồng để xuất.", "error");
+    return;
+  }
 
-html2pdf()
-  .from(content)
-  .set({
-    margin: [10, 10, 10, 10], // trên, phải, dưới, trái
-    filename: `HopDong_${hopDongDetail.value?.hop_dong?.id || "HD"}.pdf`,
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    pagebreak: { mode: ["avoid-all", "css", "legacy"] } // 👈 thêm "avoid-all"
-  })
-  .save();
+  try {
+    // Clone DOM để tránh ảnh hưởng
+    const clone = content.cloneNode(true) as HTMLElement;
 
+    // Loại bỏ các phần không muốn export
+    clone.querySelectorAll(".no-print, button, [data-ignore-export]").forEach((el) => el.remove());
+
+    // Thêm CSS inline cơ bản
+    const style = `
+      <style>
+        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.4; }
+        h1,h2,h3 { margin: 0 0 8px 0; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .italic { font-style: italic; }
+        .mt-1 { margin-top: 4px; }
+        .mt-4 { margin-top: 16px; }
+        .mt-6 { margin-top: 24px; }
+        .mt-10 { margin-top: 40px; }
+        table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+        td, th { border: 1px solid #000; padding: 6px; vertical-align: top; }
+      </style>
+    `;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head><meta charset="utf-8" />${style}</head>
+        <body>${clone.innerHTML}</body>
+      </html>
+    `;
+
+     const blob = new Blob(["\ufeff", html], {
+      type: "application/msword",
+    });
+
+    saveAs(blob, `HopDong_${hopDongDetail.value?.hop_dong?.id || "HD"}.doc`);
+  } catch (e) {
+    console.error("Export Word error:", e);
+    triggerNotification("Không xuất được file Word. Vui lòng mở console để xem lỗi chi tiết.", "error");
+  }
 };
-
 
 // ========== Công nợ ==========
 const showCongNoModal = ref(false);
@@ -187,8 +311,23 @@ onMounted(() => {
       </div>
     </transition>
 
+    <!-- Bộ lọc trạng thái -->
+  <div class="flex items-center gap-3 mb-4">
+    <label class="font-semibold">Lọc theo trạng thái:</label>
+    <select
+      v-model="selectedHanHopDong"
+      class="border rounded px-2 py-1"
+    >
+      <option value="Tất cả">Tất cả</option>
+      <option value="Chờ">Chờ</option>
+      <option value="Còn thời hạn">Còn thời hạn</option>
+      <option value="Kết thúc">Kết thúc</option>
+      <option value="Hủy">Hủy</option>
+    </select>
+  </div>
     <!-- Bảng -->
-    <DataTable :columns="columns" :data="phieuList" />
+   <DataTable :columns="columns" :data="filteredPhieuList" />
+
 
     <!-- Popup tạo hợp đồng -->
     <div v-if="showHopDongForm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -196,12 +335,19 @@ onMounted(() => {
         <h2 class="text-lg font-bold mb-4">
           Tạo hợp đồng cho phiếu {{ selectedPhieuForHopDong?.id }}
         </h2>
-        
         <div class="grid gap-y-2 mb-4">
           <label>Điều khoản</label>
-          <textarea v-model="hopDongForm.dieu_khoan" class="border rounded p-2 w-full"></textarea>
+          <QuillEditor
+            v-model:content="hopDongForm.dieu_khoan"
+            contentType="html"
+            theme="snow"
+            @update:content="val => hopDongForm.dieu_khoan = val"
+          />
         </div>
-
+        <div class="grid gap-y-2">
+        <label>Ngày lập</label>
+        <Input type="date" v-model="hopDongForm.ngay_lap" />
+      </div>
         <div class="flex gap-2 justify-end">
           <Button variant="outline" @click="showHopDongForm = false">Hủy</Button>
           <Button variant="default" @click="submitHopDong">Tạo hợp đồng</Button>
@@ -335,8 +481,7 @@ onMounted(() => {
 
         <!-- Điều khoản -->
         <h3 class="font-semibold mt-4">Điều khoản hợp đồng:</h3>
-        <p class="border p-2 whitespace-pre-line">{{ hopDongDetail?.hop_dong?.dieu_khoan }}</p>
-
+        <div v-html="hopDongDetail?.hop_dong?.dieu_khoan"></div>
         <!-- Chữ ký -->
         <div class="flex justify-between mt-10">
           <div class="text-center w-1/2">
@@ -363,7 +508,7 @@ onMounted(() => {
           <!-- Xuất file -->
           <button
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            @click="exportHopDongPDF"
+            @click="exportHopDongWord"
           >
             📄 Xuất file
           </button>
