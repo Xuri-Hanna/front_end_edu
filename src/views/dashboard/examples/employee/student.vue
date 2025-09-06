@@ -13,6 +13,8 @@ const errors = reactive<Record<string, string>>({});
 
 // Lưu thông báo thành công
 const successMessage = ref('');
+// Lưu thông báo thất bại
+const errorMessage = ref('');
 
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
@@ -54,12 +56,19 @@ const form = ref<HocSinhPayload>({
   dia_chi: '',
   so_phu_huynh: ''
 });
+const keyword = ref('');
 
 // Lấy danh sách học sinh
 const fetchHocSinh = async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/hoc_sinhs');
+  //const response = await axios.get('http://127.0.0.1:8000/api/hoc_sinhs');
+  let url = 'http://127.0.0.1:8000/api/hoc_sinhs';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/hoc_sinhs/search?keyword=${keyword.value}`;
+  }
+  const response = await axios.get(url);
   hocSinhList.value = response.data;
 };
+
 
 // Validate form
 const validateForm = () => {
@@ -142,8 +151,22 @@ const editHocSinh = (hs: HocSinhPayload) => {
 
 // Xóa học sinh
 const deleteHocSinh = async (id: string) => {
-  await axios.delete(`http://127.0.0.1:8000/api/hoc_sinhs/${id}`);
-  fetchHocSinh();
+  // await axios.delete(`http://127.0.0.1:8000/api/hoc_sinhs/${id}`);
+  // fetchHocSinh();
+  successMessage.value = '';
+  errorMessage.value = '';
+  if (!confirm('Bạn có chắc muốn xóa học sinh này?')) return;
+  try {
+    const res = await axios.delete(`http://127.0.0.1:8000/api/hoc_sinhs/${id}`);
+    successMessage.value = res.data.message;
+    fetchHocSinh();
+  } catch (err: any) {
+    if (err.response && err.response.data.message) {
+      errorMessage.value = err.response.data.message;
+    } else {
+      errorMessage.value = 'Không thể xóa học sinh này!';
+    }
+  }
 };
 
 // Reset form
@@ -204,6 +227,22 @@ onMounted(fetchHocSinh);
 
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
+    </div>
+    
+    
+    <div v-if="errorMessage" class="mb-4 text-red-600 font-semibold">
+      {{ errorMessage }}
+    </div>
+
+    <div class="mb-4 flex gap-4">
+      <Input
+        type="text"
+        v-model="keyword"
+        placeholder="Tìm kiếm theo mã HS hoặc họ tên..."
+        @input="fetchHocSinh"
+        class="flex-1"
+      />
+      <Button type="button" variant="outline" @click="fetchHocSinh">Tìm kiếm</Button>
     </div>
 
     <DataTable :columns="columns" :data="hocSinhList"></DataTable>

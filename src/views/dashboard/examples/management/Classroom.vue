@@ -5,7 +5,8 @@ import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
 import { Calendar } from 'lucide-vue-next';
-import ExcelJS, { Cell } from "exceljs";
+import ExcelJS from "exceljs";
+import  type { Cell } from "exceljs";
 import { saveAs } from "file-saver";
 
 // Danh sách lớp
@@ -279,6 +280,7 @@ const deleteLopHoc = async (id: string) => {
 const resetForm = () => {
   form.value = {
     ten_lop: '',
+    nam_hoc: '',
     mon_hoc_id: '',
     giao_vien_id: '',
     ngay_bat_dau: '',
@@ -393,7 +395,7 @@ const xoaHocSinhKhoiLop = async (lopHocId: string, hocSinhId: string) => {
     console.error('Lỗi xóa học sinh khỏi lớp:', e);
   }
 };
-// ================== Modal thêm học sinh ==================
+// ================== Model thêm học sinh ==================
 // Modal thêm học sinh
 const showAddHocSinhModal = ref(false);
 const allHocSinhs = ref<any[]>([]);
@@ -477,6 +479,7 @@ const goToPage = async (page: number) => {
   if (page < 1 || page > lastPageModal.value) return;
   await fetchHocSinhs(currentLopHoc.value.id, searchQuery.value, page);
 };
+
 //=====Lịch dạy=======
 const showScheduleModal = ref(false);
 const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];

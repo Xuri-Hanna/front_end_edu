@@ -29,7 +29,8 @@ interface PhieuPayload {
   tu_ngay: string;
   den_ngay: string;
   lich_thue: string;
-    trang_thai: string;
+  trang_thai: string;
+  ngay_lap: string;
 }
 
 const form = ref<PhieuPayload>({
@@ -39,7 +40,8 @@ const form = ref<PhieuPayload>({
   tu_ngay: '',
   den_ngay: '',
   lich_thue: '',
-  trang_thai: ''
+  trang_thai: '',
+  ngay_lap: ''
 });
 
 // ================== Columns ==================
@@ -284,6 +286,11 @@ onMounted(() => {
         <label>Đến ngày</label>
         <Input type="date" v-model="form.den_ngay" />
         <small v-if="errors.den_ngay" class="text-red-500">{{ errors.den_ngay }}</small>
+      </div>
+      <div class="grid gap-y-2">
+        <label>Ngày lập</label>
+        <Input type="date" v-model="form.ngay_lap" />
+        <small v-if="errors.ngay_lap" class="text-red-500">{{ errors.ngay_lap }}</small>
       </div>
       <!-- Lịch thuê -->
       <div class="grid gap-y-2 col-span-2">

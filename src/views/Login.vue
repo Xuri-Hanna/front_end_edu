@@ -41,6 +41,7 @@ const onSubmit = form.handleSubmit(async (values) => {
       fullName: data.full_name
       // token: data.token  // nếu có
     })
+    localStorage.setItem('username', values.username)
 
     // localStorage.setItem('token', data.token)
     // localStorage.setItem('role', data.role) // CV01, CV02, CV03

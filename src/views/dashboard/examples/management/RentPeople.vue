@@ -13,6 +13,8 @@ const errors = reactive<Record<string, string>>({});
 
 // Lưu thông báo thành công
 const successMessage = ref('');
+// Lưu thông báo thất bại
+const errorMessage = ref('');
 
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
@@ -54,10 +56,16 @@ const form = ref<NguoiThuePayload>({
   dia_chi: '',
   email: ''
 });
+const keyword = ref('');
 
 // Lấy danh sách người thuê phòng
 const fetchNguoiThue = async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/nguoi_thue_phongs');
+  //const response = await axios.get('http://127.0.0.1:8000/api/nguoi_thue_phongs');
+  let url = 'http://127.0.0.1:8000/api/nguoi_thue_phongs';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/nguoi_thue_phongs/search?keyword=${keyword.value}`;
+  }
+  const response = await axios.get(url);
   nguoiThueList.value = response.data;
 };
 
@@ -144,8 +152,22 @@ const editNguoiThue = (ntp: NguoiThuePayload) => {
 
 // Xóa người thuê
 const deleteNguoiThue = async (id: string) => {
-  await axios.delete(`http://127.0.0.1:8000/api/nguoi_thue_phongs/${id}`);
-  fetchNguoiThue();
+  // await axios.delete(`http://127.0.0.1:8000/api/nguoi_thue_phongs/${id}`);
+  // fetchNguoiThue();
+  successMessage.value = '';
+  errorMessage.value = '';
+  if (!confirm('Bạn có chắc muốn xóa người thuê phòng này?')) return;
+  try {
+    const res = await axios.delete(`http://127.0.0.1:8000/api/nguoi_thue_phongs/${id}`);
+    successMessage.value = res.data.message;
+    fetchNguoiThue();
+  } catch (err: any) {
+    if (err.response && err.response.data.message) {
+      errorMessage.value = err.response.data.message;
+    } else {
+      errorMessage.value = 'Không thể xóa người thuê phòng này!';
+    }
+  }
 };
 
 // Reset form
@@ -206,6 +228,17 @@ onMounted(fetchNguoiThue);
 
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
+    </div>
+
+    <div class="mb-4 flex gap-4">
+      <Input
+        type="text"
+        v-model="keyword"
+        placeholder="Tìm kiếm theo mã NT hoặc họ tên..."
+        @input="fetchNguoiThue"
+        class="flex-1"
+      />
+      <Button type="button" variant="outline" @click="fetchNguoiThue">Tìm kiếm</Button>
     </div>
 
     <DataTable :columns="columns" :data="nguoiThueList"></DataTable>

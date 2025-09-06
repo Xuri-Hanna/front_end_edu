@@ -163,6 +163,22 @@ const router = createRouter({
             title: 'Hóa đơn thuê phòng',
           } as RouteMeta & IRouteMeta
         },
+        {
+          path: 'thong_ke_thue_phong',
+          name: 'admin_thong_ke_thue_phong',
+          component: () => import('@/views/dashboard/examples/report/RentRoom.vue'),
+          meta: {
+            title: 'Thống kê tài chính',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'thong_ke_giao_duc',
+          name: 'admin_thong_ke_giao_duc',
+          component: () => import('@/views/dashboard/examples/report/Education.vue'),
+          meta: {
+            title: 'Thống kê tài chính',
+          } as RouteMeta & IRouteMeta
+        },
       ]
     },
     {
@@ -192,10 +208,82 @@ const router = createRouter({
         },
         {
           path: 'don_vi_cong_tac',
-          name: 'don_vi_cong_tac',
+          name: 'staff-don_vi_cong_tac',
           component: () => import('@/views/dashboard/examples/system/workplace.vue'),
           meta: {
             title: 'Đơn vị công tác',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'phong_hoc',
+          name: 'staff_phong_hoc',
+          component: () => import('@/views/dashboard/examples/management/Room.vue'),
+          meta: {
+            title: 'Phòng học',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'mon_hoc',
+          name: 'staff_mon_hoc',
+          component: () => import('@/views/dashboard/examples/management/Subject.vue'),
+          meta: {
+            title: 'Môn học',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'nguoi_thue_phong',
+          name: 'staff_nguoi_thue_phong',
+          component: () => import('@/views/dashboard/examples/management/RentPeople.vue'),
+          meta: {
+            title: 'Người thuê phòng',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'lop_hoc',
+          name: 'staff_lop_hoc',
+          component: () => import('@/views/dashboard/examples/management/Classroom.vue'),
+          meta: {
+            title: 'Lớp học',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'lich_day',
+          name: 'staff_lich_day',
+          component: () => import('@/views/dashboard/examples/management/Schedule.vue'),
+          meta: {
+            title: 'Lịch dạy',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'hoa_don_hoc_phi',
+          name: 'staff_hoa_don_hoc_phi',
+          component: () => import('@/views/dashboard/examples/management/InvoiceStudent.vue'),
+          meta: {
+            title: 'Hóa đơn học phí',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'hop_dong_thue_phong',
+          name: 'staff_hop_dong_thue_phong',
+          component: () => import('@/views/dashboard/examples/management/ContractRent.vue'),
+          meta: {
+            title: 'Hợp đồng thuê phòng',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'phieu_thue_phong',
+          name: 'staff_phieu_thue_phong',
+          component: () => import('@/views/dashboard/examples/management/VoucherRental.vue'),
+          meta: {
+            title: 'Phiếu thuê phòng',
+          } as RouteMeta & IRouteMeta
+        },
+        {
+          path: 'hoa_don_thue_phong',
+          name: 'staff_hoa_don_thue_phong',
+          component: () => import('@/views/dashboard/examples/management/RentInvoice.vue'),
+          meta: {
+            title: 'Hóa đơn thuê phòng',
           } as RouteMeta & IRouteMeta
         },
       ]
