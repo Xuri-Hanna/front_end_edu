@@ -261,6 +261,14 @@ onMounted(() => {
   fetchDonViList();
 });
 
+// watch(
+//   () => route.fullPath,
+//   () => {
+//     fetchGiaoVien();
+//   },
+//   { immediate: true }
+// );
+
 
 </script>
 

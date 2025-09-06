@@ -161,8 +161,8 @@ const resetForm = () => {
     vi_tri_phong: '',
     so_cho_ngoi: 0,
     gia_phong: 0
-    // so_cho_ngoi: null,
-    // gia_phong: null
+  //  so_cho_ngoi: null,
+  //  gia_phong: null
   };
   Object.keys(errors).forEach(key => (errors[key] = ''));
 };
