@@ -4,17 +4,21 @@ import axios from 'axios'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
-import { Pie } from "vue-chartjs"
+import { Pie, Bar } from "vue-chartjs"
 import {
   Chart as ChartJS,
   Title,
   Tooltip,
   Legend,
   ArcElement,
-  CategoryScale
+  CategoryScale,
+  BarElement,
+  LinearScale
 } from "chart.js"
+import html2pdf from "html2pdf.js"
+import html2canvas from "html2canvas"
 
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale)
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, BarElement, LinearScale)
 
 // reactive lưu ngày bắt đầu và ngày kết thúc
 const startDate = ref<string | null>(null)
@@ -235,12 +239,47 @@ const fetchTopPhong = async () => {
     console.error("Lỗi fetch top phòng:", e);
   }
 }
+
+const doanhThuThuePhong = ref<any[]>([])
+
+const fetchDoanhThuThuePhong = async () => {
+  try {
+    const res = await axios.get('http://127.0.0.1:8000/api/thong_ke/doanh_thu_thue_phong_theo_thang', {
+      params: { year: new Date().getFullYear() }
+    })
+    doanhThuThuePhong.value = res.data
+  } catch (e) {
+    console.error("Lỗi fetch doanh thu thuê phòng:", e)
+  }
+}
+
+const chartRef = ref<HTMLDivElement | null>(null)
+
+const downloadChart = async () => {
+  if (!chartRef.value) return
+
+  const el = chartRef.value.querySelector("canvas") // chỉ cần lấy thẳng canvas
+  if (!el) {
+    console.error("Không tìm thấy canvas của biểu đồ")
+    return
+  }
+
+  const canvas = await html2canvas(el, { scale: 2 })
+  const link = document.createElement("a")
+  link.download = "doanh_thu_thue_phong.png"
+  link.href = canvas.toDataURL("image/png")
+  link.click()
+}
+
+
+
 // Khi component mount -> set ngày mặc định + fetch dữ liệu luôn
 onMounted(() => {
   getDefaultDates()
   fetchDuLieu();
   fetchHopDongStatus();
   fetchLopHocStatus()
+  fetchDoanhThuThuePhong()
 })
 </script>
 
@@ -491,9 +530,38 @@ onMounted(() => {
               </table>
             </CardContent>
           </Card>
+
+          <Card class="col-span-4">
+            <CardHeader>
+              <div class="flex justify-between items-center w-full">
+                <CardTitle class="!text-left">Doanh thu thuê phòng theo tháng</CardTitle>
+                <Button @click="downloadChart" size="sm" variant="secondary">
+                  Tải PNG
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div class="h-[300px]" ref="chartRef">
+                <Bar
+                  :data="{
+                    labels: doanhThuThuePhong.map(item => item.thang),
+                    datasets: [
+                      {
+                        label: 'Doanh thu (VNĐ)',
+                        data: doanhThuThuePhong.map(item => item.doanh_thu),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                      }
+                    ]
+                  }"
+                  :options="{ responsive: true, plugins: { legend: { position: 'top' } } }"
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
+        
          <!-- Báo cáo chung -->
-        <div class="grid gap-4 md:grid-cols-3">
+        <!-- <div class="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle class="text-sm font-medium">
@@ -565,9 +633,9 @@ onMounted(() => {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> -->
         <!-- Báo cáo giáo viên -->
-        <div class="grid gap-4 md:grid-cols-2 mt-4">
+        <!-- <div class="grid gap-4 md:grid-cols-2 mt-4">
           <Card>
             <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle class="text-sm font-medium">
@@ -643,8 +711,8 @@ onMounted(() => {
               </table>
             </CardContent>
           </Card>
-        </div>
+        </div>-->
       </TabsContent>
     </Tabs>
-  </div>
+  </div> 
 </template>

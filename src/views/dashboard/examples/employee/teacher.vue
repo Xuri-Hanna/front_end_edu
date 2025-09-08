@@ -18,6 +18,22 @@ const successMessage = ref('');
 // Lưu thông báo thất bại
 const errorMessage = ref('');
 
+
+// Quản lý form popup
+const showForm = ref(false);
+const openAddForm = () => {
+  resetForm();
+  showForm.value = true;
+};
+const editGiaoVien = (gv: GiaoVienPayload) => {
+  form.value = { ...gv };
+  showForm.value = true;
+};
+const closeForm = () => {
+  showForm.value = false;
+  resetForm();
+};
+
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
   { accessorKey: 'id', header: 'Mã GV' },
@@ -198,8 +214,9 @@ const submitForm = async () => {
       await axios.post('http://127.0.0.1:8000/api/giao_viens', form.value);
       successMessage.value = 'Thêm giáo viên thành công!';
     }
-    resetForm();
+    //resetForm();
     fetchGiaoVien();
+    closeForm();
   } catch (err: any) {
     if (err.response && err.response.status === 422) {
       const validationErrors = err.response.data.errors;
@@ -213,9 +230,9 @@ const submitForm = async () => {
 };
 
 // Chỉnh sửa giáo viên
-const editGiaoVien = (gv: GiaoVienPayload) => {
-  form.value = { ...gv };
-};
+// const editGiaoVien = (gv: GiaoVienPayload) => {
+//   form.value = { ...gv };
+// };
 
 // Xóa giáo viên
 const deleteGiaoVien = async (id: string) => {
@@ -254,7 +271,6 @@ const resetForm = () => {
 
 
 
-
 onMounted(() => {
   fetchGiaoVien();
   fetchTaiKhoanList();
@@ -262,6 +278,13 @@ onMounted(() => {
   fetchDonViList();
 });
 
+// watch(
+//   () => route.fullPath,
+//   () => {
+//     fetchGiaoVien();
+//   },
+//   { immediate: true }
+// );
 
 
 </script>
@@ -269,7 +292,7 @@ onMounted(() => {
 <template>
   <div>
     <h1 class="text-lg font-bold mb-4">Quản lý Giáo viên</h1>
-    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
+    <!-- <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
       <div class="grid gap-y-2">
         <label>Họ tên</label>
         <Input type="text" v-model="form.ho_ten" />
@@ -331,7 +354,68 @@ onMounted(() => {
         <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Giáo viên</Button>
         <Button type="button" variant="outline" @click="resetForm">Reset</Button>
       </div>
-    </form>
+    </form>-->
+
+    <!-- Nút mở form -->
+    <div class="mb-4">
+      <Button @click="openAddForm">+ Thêm giáo viên</Button>
+    </div>
+
+    <!-- Form popup -->
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-[600px]">
+        <h2 class="font-bold text-lg mb-4">
+          {{ form.id ? 'Sửa Giáo viên' : 'Thêm Giáo viên' }}
+        </h2>
+
+        <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Họ tên</label>
+            <Input v-model="form.ho_ten" />
+            <small v-if="errors.ho_ten" class="text-red-500">{{ errors.ho_ten }}</small>
+          </div>
+          <div>
+            <label>CCCD</label>
+            <Input v-model="form.cccd" />
+          </div>
+          <div>
+            <label>Địa chỉ</label>
+            <Input v-model="form.dia_chi" />
+          </div>
+          <div>
+            <label>SĐT</label>
+            <Input v-model="form.so_dien_thoai" />
+          </div>
+          <div>
+            <label>Email</label>
+            <Input v-model="form.email" />
+          </div>
+          <div>
+            <label>Chức vụ</label>
+            <select v-model="form.chuc_vu_id" class="border rounded p-2 w-full">
+              <option value="">-- Chọn chức vụ --</option>
+              <option v-for="cv in chucVuList" :key="cv.id" :value="cv.id">{{ cv.ten_chuc_vu }}</option>
+            </select>
+          </div>
+          <div>
+            <label>Tài khoản</label>
+            <select v-model="form.tai_khoan_id" class="border rounded p-2 w-full">
+              <option v-for="tk in taiKhoanList" :key="tk.ID" :value="tk.ID">{{ tk.ID }}</option>
+            </select>
+          </div>
+          <div>
+            <label>Đơn vị công tác</label>
+            <select v-model="form.don_vi_cong_tac_id" class="border rounded p-2 w-full">
+              <option v-for="dv in donViList" :key="dv.id" :value="dv.id">{{ dv.ten_don_vi }}</option>
+            </select>
+          </div>
+          <div class="col-span-2 flex justify-end gap-2">
+            <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }}</Button>
+            <Button type="button" variant="outline" @click="closeForm">Đóng</Button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
@@ -340,7 +424,7 @@ onMounted(() => {
 
     <div v-if="errorMessage" class="mb-4 text-red-600 font-semibold">
       {{ errorMessage }}
-    </div>
+    </div> 
 
     <div class="mb-4 flex gap-4">
       <Input
@@ -356,7 +440,7 @@ onMounted(() => {
     <DataTable :columns="columns" :data="giaoVienList"></DataTable>
   </div>
     <!-- Popup -->
-    <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center" @click.self="showPopup = false">
+    <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" @click.self="showPopup = false">
       <div class="bg-white rounded-lg p-4 min-w-[300px]">
         <h3 class="font-bold text-lg mb-2">Thông tin tài khoản</h3>
         <p><strong>Username:</strong> {{ selectedTaiKhoan?.username }}</p>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -14,59 +15,64 @@ import axios from 'axios'
 import { ref } from 'vue'
 
 const router = useRouter()
-
-
 const error = ref('')
-
-// Validate form
-const formSchema = toTypedSchema(z.object({
-  username: z.string().min(1, { message: "Tài khoản không được để trống" }),
-  password: z.string().min(1, { message: "Mật khẩu không được để trống" }),
-}))
-
-const form = useForm({
-  validationSchema: formSchema,
-})
-
 const authStore = useAuthStore()
 
-const onSubmit = form.handleSubmit(async (values) => {
+// State
+const username = ref('')
+const password = ref('')
+const errors = ref<{ username?: string; password?: string }>({})
+
+const onSubmit = async () => {
+  // Reset lỗi
+  errors.value = {}
   error.value = ''
-  try {
-    const response = await axios.post('http://localhost:8000/api/login', values)
-    const data = response.data
 
-    authStore.setAuthData({
-      role: data.role,
-      fullName: data.full_name
-      // token: data.token  // nếu có
-    })
-    localStorage.setItem('username', values.username)
+  // Validate thủ công
+  if (!username.value) {
+    errors.value.username = 'Tài khoản không được để trống'
+  }
+  if (!password.value) {
+    errors.value.password = 'Tài khoản không được để trống'
+  }
 
-    // localStorage.setItem('token', data.token)
-    // localStorage.setItem('role', data.role) // CV01, CV02, CV03
-    // localStorage.setItem('full_name', data.full_name)
+  // Nếu không có lỗi -> gọi API
+  if (Object.keys(errors.value).length === 0) {
+    try {
+      const response = await axios.post('http://localhost:8000/api/login', {
+        username: username.value,
+        password: password.value,
+      })
+      const data = response.data
 
-    // Điều hướng dựa trên quyền
-    if (data.role === 'CV01') {
-      router.push('/admin/dashboard')
-    } else if (data.role === 'CV02') {
-      router.push('/staff/dashboard')
-    } else if (data.role === 'CV03') {
-      router.push('/teacher/dashboard')
-    } else {
-      error.value = 'Không xác định được quyền truy cập.'
-    }
+      authStore.setAuthData({
+        role: data.role,
+        fullName: data.full_name,
+        id: data.id,
+      })
 
+      localStorage.setItem('username', username.value)
 
-  } catch (err: any) {
-    if (err.response && err.response.data && err.response.data.message) {
-      error.value = err.response.data.message
-    } else {
-      error.value = 'Đăng nhập thất bại. Vui lòng kiểm tra tài khoản và mật khẩu.'
+      if (data.role === 'CV001') {
+        router.push('/admin/dashboard')
+      } else if (data.role === 'CV002') {
+        router.push('/staff/dashboard')
+      } else if (data.role === 'CV003') {
+        router.push('/teacher/dashboard')
+      } else {
+        error.value = 'Không xác định được quyền truy cập.'
+      }
+    } catch (err: any) {
+      if (err.response?.data?.message) {
+        error.value = err.response.data.message
+      } else {
+        error.value = 'Đăng nhập thất bại. Vui lòng kiểm tra tài khoản và mật khẩu.'
+      }
     }
   }
-})
+}
+
+
 </script>
 
 <template>
@@ -76,28 +82,21 @@ const onSubmit = form.handleSubmit(async (values) => {
         <CardTitle class="text-center">Đăng nhập</CardTitle>
       </CardHeader>
       <CardContent>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" novalidate>
+
           <!-- Username -->
-          <FormField v-slot="{ componentField }" name="username">
-            <FormItem class="mb-4">
-              <FormLabel>Tên đăng nhập</FormLabel>
-              <FormControl>
-                <Input type="text" placeholder="Nhập tên đăng nhập" v-bind="componentField" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          </FormField>
+          <div class="mb-4">
+            <label class="block mb-1">Tên đăng nhập</label>
+            <Input v-model="username" type="text" placeholder="Nhập tên đăng nhập" />
+            <p v-if="errors.username" class="text-red-500 text-sm">{{ errors.username }}</p>
+          </div>
 
           <!-- Password -->
-          <FormField v-slot="{ componentField }" name="password">
-            <FormItem>
-              <FormLabel>Mật khẩu</FormLabel>
-              <FormControl>
-                <Input type="password" placeholder="Nhập mật khẩu" v-bind="componentField" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          </FormField>
+          <div class="mb-4">
+            <label class="block mb-1">Mật khẩu</label>
+            <Input v-model="password" type="password" placeholder="Nhập mật khẩu" />
+            <p v-if="errors.password" class="text-red-500 text-sm">{{ errors.password }}</p>
+          </div>
 
           <!-- Hiển thị lỗi -->
           <p v-if="error" class="text-red-500 text-sm mt-2">{{ error }}</p>

@@ -35,9 +35,9 @@ const router = useRouter()
 
 // Map mã chức vụ sang tên hiển thị
 const roleLabels: Record<string, string> = {
-  CV01: 'Trưởng phòng',
-  CV02: 'Nhân viên',
-  CV03: 'Giáo viên'
+  CV001: 'Trưởng phòng',
+  CV002: 'Nhân viên',
+  CV003: 'Giáo viên'
 }
 
 onMounted(() => {

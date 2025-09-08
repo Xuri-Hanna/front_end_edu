@@ -1,9 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
+// import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  Title, Tooltip, Legend,
+  BarElement, CategoryScale, LinearScale
+} from 'chart.js'
+import html2pdf from "html2pdf.js"
+import html2canvas from "html2canvas"
+
+
+
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 // Ngày mặc định
 const startDate = ref<string | null>(null)
@@ -77,6 +90,53 @@ const fetchTopMonHoc = async () => {
     console.error('Lỗi fetch báo cáo chung:', e)
   }
 }
+// Doanh thu 12 tháng
+const doanhThuThang = ref<any[]>([])
+
+const fetchDoanhThuThang = async () => {
+  try {
+    const res = await axios.get('http://127.0.0.1:8000/api/thong_ke/doanh_thu_hoc_phi_theo_thang', {
+      params: { year: new Date().getFullYear() }
+    })
+    doanhThuThang.value = res.data
+  } catch (e) {
+    console.error('Lỗi fetch doanh thu theo tháng:', e)
+  }
+}
+
+const chartData = computed(() => ({
+  labels: doanhThuThang.value.map(item => item.thang),
+  datasets: [
+    {
+      label: 'Doanh thu',
+      data: doanhThuThang.value.map(item => item.doanh_thu),
+      backgroundColor: '#4f46e5'
+    }
+  ]
+}))
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false
+}
+
+const chartRef = ref<HTMLDivElement | null>(null)
+
+const downloadChart = async () => {
+  if (!chartRef.value) return
+
+  const el = chartRef.value.querySelector("canvas") // chỉ cần lấy thẳng canvas
+  if (!el) {
+    console.error("Không tìm thấy canvas của biểu đồ")
+    return
+  }
+
+  const canvas = await html2canvas(el, { scale: 2 })
+  const link = document.createElement("a")
+  link.download = "doanh_thu_hoc_phi.png"
+  link.href = canvas.toDataURL("image/png")
+  link.click()
+}
 
 const fetchDuLieu = () => {
   fetchDoanhthu()
@@ -90,6 +150,7 @@ onMounted(() => {
   getDefaultDates()
   fetchDuLieu()
   fetchLopHocStatus()
+  fetchDoanhThuThang()
 })
 </script>
 
@@ -100,6 +161,8 @@ onMounted(() => {
         <input type="date" v-model="startDate" class="border rounded px-2 py-1" />
         <input type="date" v-model="endDate" class="border rounded px-2 py-1" />
         <Button @click="fetchDuLieu" variant="secondary">Cập nhật</Button>
+
+        <Button>Tải xuống</Button>
       </div>
     </page-header>
 
@@ -256,6 +319,35 @@ onMounted(() => {
               </table>
             </CardContent>
           </Card>
+          <Card class="col-span-1">
+            <CardHeader>
+              <div class="flex justify-between items-center w-full">
+                <CardTitle class="!text-left">Doanh thu học phí theo tháng</CardTitle>
+                <Button @click="downloadChart" size="sm" variant="secondary">
+                  Tải PNG
+                </Button>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              <div class="h-[300px]" ref="chartRef">
+                <Bar
+                  :data="{
+                    labels: chartData.labels,
+                    datasets: [
+                      {
+                        label: 'Doanh thu (VNĐ)',
+                        data: chartData.datasets[0].data,
+                        backgroundColor: 'rgba(34, 197, 94, 0.6)'
+                      }
+                    ]
+                  }"
+                  :options="{ responsive: true, plugins: { legend: { position: 'top' } }, maintainAspectRatio: false }"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
       </TabsContent>
     </Tabs>

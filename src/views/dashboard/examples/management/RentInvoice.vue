@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, h } from 'vue';
+import { ref, reactive, onMounted, h, computed } from 'vue';
 import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,11 @@ const hoaDonSuccess = ref('');
 // Sidebar danh sách hóa đơn
 const hoaDonList = ref<any[]>([]);
 const showHoaDonList = ref(false);
+
+// Bộ lọc trạng thái
+const filterTrangThai = ref(''); // '' = tất cả
+
+
 
 // Định nghĩa cột bảng hợp đồng
 const columns: ColumnDef<any>[] = [
@@ -68,6 +73,12 @@ const columns: ColumnDef<any>[] = [
   }
 ];
 
+
+// Lọc danh sách theo trạng thái
+const filteredHopDongList = computed(() => {
+  if (!filterTrangThai.value) return hopDongList.value;
+  return hopDongList.value.filter(hd => hd.trang_thai === filterTrangThai.value);
+});
 // ================== API ==================
 const fetchHopDong = async () => {
   const res = await axios.get('http://127.0.0.1:8000/api/hop_dong_thue_phongs');
@@ -110,8 +121,22 @@ const submitHoaDon = async () => {
 
 // Xem danh sách hóa đơn
 const viewHoaDon = async (hopDongId: string) => {
-  const res = await axios.get(`http://127.0.0.1:8000/api/hoa_don_thue_phong/hop_dong/${hopDongId}`);
-  hoaDonList.value = (res.data.data ?? []).sort((a, b) => (a.trang_thai === 'Chưa thanh toán' ? -1 : 1));
+  // const res = await axios.get(`http://127.0.0.1:8000/api/hoa_don_thue_phong/hop_dong/${hopDongId}`);
+  // hoaDonList.value = (res.data.data ?? []).sort((a, b) => (a.trang_thai === 'Chưa thanh toán' ? -1 : 1));
+  // showHoaDonList.value = true;
+
+  const res = await axios.get(
+    `http://127.0.0.1:8000/api/hoa_don_thue_phong/hop_dong/${hopDongId}`
+  );
+
+  // tìm trạng thái hợp đồng trong hopDongList
+  const hopDong = hopDongList.value.find(hd => hd.id === hopDongId);
+
+  hoaDonList.value = (res.data.data ?? []).map((hd: any) => ({
+    ...hd,
+    hop_dong_trang_thai: hopDong?.trang_thai ?? '---'
+  }));
+
   showHoaDonList.value = true;
 };
 
@@ -155,8 +180,19 @@ onMounted(() => {
 
 <template>
   <div>
-    <h1 class="text-lg font-bold mb-4">Quản lý Hợp đồng thuê phòng</h1>
-    <DataTable :columns="columns" :data="hopDongList" />
+    <h1 class="text-lg font-bold mb-4">Quản lý Hóa đơn thuê phòng</h1>
+    <!-- Bộ lọc trạng thái -->
+    <div class="flex items-center gap-2 mb-4">
+      <label class="font-medium">Lọc theo trạng thái:</label>
+      <select v-model="filterTrangThai" class="border p-2 rounded">
+        <option value="">Tất cả</option>
+        <option value="Chưa thanh toán">Chưa thanh toán</option>
+        <option value="Đã thanh toán">Đã thanh toán</option>
+      </select>
+    </div>
+
+    <!-- <DataTable :columns="columns" :data="hopDongList" /> -->
+    <DataTable :columns="columns" :data="filteredHopDongList" />
 
     <!-- Modal tạo hóa đơn -->
     <div v-if="showHoaDonModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -202,6 +238,8 @@ onMounted(() => {
           <h2 class="text-lg font-bold mb-4 text-center">Danh sách hóa đơn</h2>
 
           <div v-for="hd in hoaDonList" :key="hd.id" class="border rounded p-4 mb-4 shadow-sm" :id="`hoa-don-${hd.id}`">
+          <!-- <div v-for="hd in filteredHopDongList" :key="hd.id" class="border rounded p-4 mb-4 shadow-sm" :id="`hoa-don-${hd.id}`"> -->
+
             <h3 class="font-semibold text-center text-xl mb-2">Hóa đơn thuê phòng</h3>
             <p class="text-center text-sm mb-4">Ngày lập: {{ hd.ngay_lap }}</p>
 
@@ -212,9 +250,16 @@ onMounted(() => {
               </div>
               <div>
                 <p><b>Tổng tiền:</b> {{ formatCurrency(hd.tong_tien) }}</p>
-                <p><b>Trạng thái:</b>
+                <!-- <p><b>Trạng thái:</b>
                   <span :class="hd.trang_thai === 'Chưa thanh toán' ? 'text-red-600' : 'text-green-600'">
                     {{ hd.trang_thai }}
+                  </span>
+                </p> -->
+                <p><b>Trạng thái:</b>
+                  <span :class="hd.hop_dong_trang_thai === 'Đã thanh toán' ? 'text-green-600'
+                            : hd.hop_dong_trang_thai === 'Chưa thanh toán' ? 'text-red-600'
+                            : 'text-gray-600'">
+                    {{ hd.hop_dong_trang_thai }}
                   </span>
                 </p>
               </div>
