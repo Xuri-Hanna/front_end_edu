@@ -33,7 +33,7 @@ const onSubmit = async () => {
     errors.value.username = 'Tài khoản không được để trống'
   }
   if (!password.value) {
-    errors.value.password = 'Tài khoản không được để trống'
+    errors.value.password = 'Mật khẩu không được để trống'
   }
 
   // Nếu không có lỗi -> gọi API

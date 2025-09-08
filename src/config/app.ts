@@ -338,12 +338,12 @@ export const TEACHER_MENU: Record<string, Menu> = {
       {
         title: 'Lớp học',
         icon: 'BetweenHorizontalEnd',
-        path: ''
+        path: 'lop_hoc'
       },
       {
         title: 'Lịch dạy',
         icon: 'BetweenHorizontalEnd',
-        path: ''
+        path: 'lich_day'
       },
     ]
   },

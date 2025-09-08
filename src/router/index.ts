@@ -305,6 +305,22 @@ const router = createRouter({
             title: 'Trang chủ',
           } as RouteMeta & IRouteMeta,
         },
+        {
+          path: 'lich_day',
+          name: 'teacher-lich_day',
+          component: () => import('@/views/dashboard/examples/AuthTeacher/Schedule.vue'),
+          meta: {
+            title: 'Lịch dạy',
+          } as RouteMeta & IRouteMeta,
+        },
+        {
+          path: 'lop_hoc',
+          name: 'teacher-lop_hoc',
+          component: () => import('@/views/dashboard/examples/AuthTeacher/Classroom.vue'),
+          meta: {
+            title: 'Lớp học',
+          } as RouteMeta & IRouteMeta,
+        },
       ]
     },
 
