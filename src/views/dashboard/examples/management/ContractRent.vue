@@ -356,7 +356,7 @@ onMounted(() => {
     </div>
    <!-- Popup xem hợp đồng -->
   <transition name="slide-left">
-    <div v-if="showViewHopDong" class="fixed inset-0 flex">
+    <div v-if="showViewHopDong" class="fixed inset-0 flex z-50">
       <!-- Overlay -->
       <div class="flex-1 bg-black bg-opacity-50" @click="showViewHopDong = false"></div>
 
@@ -452,7 +452,7 @@ onMounted(() => {
             <td class="border px-2 py-1">{{ hopDongDetail?.phong?.so_cho}}</td>
           </tr>
           <tr>
-            <td class="border px-2 py-1">Gía phòng</td>
+            <td class="border px-2 py-1">Giá phòng</td>
             <td class="border px-2 py-1">
               {{
                   new Intl.NumberFormat("vi-VN", {
