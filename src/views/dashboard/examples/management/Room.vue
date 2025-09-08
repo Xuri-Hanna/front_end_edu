@@ -239,32 +239,6 @@ const showSchedule = ref(true);
 const toggleSchedule = () => {
   showSchedule.value = !showSchedule.value;
 };
-//ghi chú phòng
-const updateNote = async (phongId: string, note: string) => {
-  try {
-    await axios.post('http://127.0.0.1:8000/api/lich_phong_note', {
-      phong_id: phongId,
-      ghi_chu: note,
-      // Nếu bạn muốn thêm thu/buoi thì truyền thêm:
-      // thu: 'T2',
-      // buoi: 'morning'
-    });
-
-    await fetchSchedule(); // reload dữ liệu
-  } catch (e) {
-    console.error('Lỗi khi cập nhật ghi chú:', e);
-  }
-};
-
-const updateAllNotesForColumn = () => {
-  phongHocList.value.forEach(phong => {
-    const noteInput = document.querySelector<HTMLInputElement>(`input[value='${phong.ghi_chu}']`);
-    if (noteInput) {
-      updateNote(phong.id, noteInput.value);
-    }
-  });
-};
-
 
 const weekRange = computed(() => {
   const today = new Date();

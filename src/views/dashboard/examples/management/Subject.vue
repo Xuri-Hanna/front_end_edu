@@ -147,7 +147,7 @@ onMounted(fetchMonHoc);
         <select v-model="form.khoi_lop" class="border rounded p-2">
           <option value="10">10</option>
           <option value="11">11</option>
-          <option value="11">12</option>
+          <option value="12">12</option>
         </select>
         <small v-if="errors.khoi_lop" class="text-red-500">{{ errors.khoi_lop }}</small>
       </div>
