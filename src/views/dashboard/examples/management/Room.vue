@@ -20,6 +20,25 @@ const errors = reactive<Record<string, string>>({});
 const successMessage = ref('');
 const messageType = ref<'success' | 'error'>('success');
 
+const showForm = ref(false);
+// Mở form thêm mới
+const openAddForm = () => {
+  resetForm();
+  showForm.value = true;
+};
+
+// Chỉnh sửa phòng học
+const editPhongHoc = (ph: PhongHocPayload) => {
+  form.value = { ...ph };
+  showForm.value = true;
+};
+
+// Đóng form
+const closeForm = () => {
+  showForm.value = false;
+  resetForm();
+};
+
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
   { accessorKey: 'id', header: 'Mã phòng' },
@@ -127,8 +146,9 @@ const submitForm = async () => {
       successMessage.value = 'Thêm phòng học thành công!';
       messageType.value = 'success';
     }
-    resetForm();
+    //resetForm();
     fetchPhongHoc();
+    closeForm();
   } catch (err: any) {
       console.error(err); // log thật
     successMessage.value = 'Có lỗi xảy ra, vui lòng thử lại.';
@@ -137,9 +157,9 @@ const submitForm = async () => {
 };
 
 // Chỉnh sửa phòng học
-const editPhongHoc = (ph: PhongHocPayload) => {
-  form.value = { ...ph };
-};
+// const editPhongHoc = (ph: PhongHocPayload) => {
+//   form.value = { ...ph };
+// };
 
 // Xóa phòng học
 const deletePhongHoc = async (id: string) => {
@@ -322,7 +342,7 @@ onMounted(async () => {
       <!-- View 1: Lịch phòng -->
       <div class="w-full flex-shrink-0 pr-4">
         <h2 class="text-lg font-bold mb-2">
-          Kê hoạch sử dụng phòng
+          Kế hoạch sử dụng phòng
           <span class="ml-2 text-gray-600 text-sm">({{ weekRange }})</span>
         </h2>
         <Button variant="destructive" class="mb-2" @click="resetSchedule">Reset Lịch</Button>
@@ -402,13 +422,13 @@ onMounted(async () => {
               </td>
               <template v-for="day in days" :key="lop.id + '-' + day">
                 <td class="border border-gray-400">
-                  <span v-if="lop.lich_days?.some(ld => ld.thu === day && ld.buoi === 'morning')" class="text-blue-600 font-bold">✔</span>
+                  <span v-if="lop.lich_days?.some( (ld:any) => ld.thu === day && ld.buoi === 'morning')" class="text-blue-600 font-bold">✔</span>
                 </td>
                 <td class="border border-gray-400">
-                 <span v-if="lop.lich_days?.some(ld => ld.thu === day && ld.buoi === 'afternoon')" class="text-blue-600 font-bold">✔</span>
+                 <span v-if="lop.lich_days?.some((ld:any) => ld.thu === day && ld.buoi === 'afternoon')" class="text-blue-600 font-bold">✔</span>
                 </td>
                 <td class="border border-gray-400">
-                  <span v-if="lop.lich_days?.some(ld => ld.thu === day && ld.buoi === 'evening')" class="text-blue-600 font-bold">✔</span>
+                  <span v-if="lop.lich_days?.some((ld:any) => ld.thu === day && ld.buoi === 'evening')" class="text-blue-600 font-bold">✔</span>
                 </td>
               </template>
             </tr>
@@ -421,7 +441,7 @@ onMounted(async () => {
         <h1 class="text-lg font-bold mb-4">Quản lý Phòng học</h1>
 
         <!-- Form -->
-        <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
+        <!-- <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
           <div>
             <label>Số phòng</label>
             <Input type="text" v-model="form.so_phong" />
@@ -450,7 +470,12 @@ onMounted(async () => {
             <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Phòng học</Button>
             <Button type="button" variant="outline" @click="resetForm">Reset</Button>
           </div>
-        </form>
+        </form> -->
+
+        <!-- Nút mở form -->
+        <div class="mb-4">
+          <Button @click="openAddForm">+ Thêm phòng học </Button>
+        </div>
 
         <p v-if="successMessage" :class="messageType === 'success' ? 'text-green-500' : 'text-red-500'">
           {{ successMessage }}
@@ -466,9 +491,52 @@ onMounted(async () => {
           />
           <Button type="button" variant="outline" @click="fetchPhongHoc">Tìm kiếm</Button>
         </div>
-
         <!-- Bảng danh sách -->
         <DataTable :columns="columns" :data="phongHocList"></DataTable>
+          
+         <!-- Form popup -->
+        <teleport to="body">
+          <div 
+            v-if="showForm" 
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          >
+            <div class="bg-white p-6 rounded-lg shadow-lg w-[600px]">
+              <h2 class="text-lg font-bold mb-4">
+                {{ form.id ? 'Cập nhật phòng học' : 'Thêm phòng học' }}
+              </h2>
+              <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4">
+                <div>
+                  <label>Số phòng</label>
+                  <Input type="text" v-model="form.so_phong" />
+                  <small v-if="errors.so_phong" class="text-red-500">{{ errors.so_phong }}</small>
+                </div>
+                <div>
+                  <label>Vị trí phòng</label>
+                  <Input type="text" v-model="form.vi_tri_phong" />
+                  <small v-if="errors.vi_tri_phong" class="text-red-500">{{ errors.vi_tri_phong }}</small>
+                </div>
+                <div>
+                  <label>Số chỗ ngồi</label>
+                  <Input type="number" v-model.number="form.so_cho_ngoi" />
+                  <small v-if="errors.so_cho_ngoi" class="text-red-500">{{ errors.so_cho_ngoi }}</small>
+                </div>
+                <div>
+                  <label>Giá phòng</label>
+                  <Input type="number" v-model.number="form.gia_phong" />
+                  <small v-if="errors.gia_phong" class="text-red-500">{{ errors.gia_phong }}</small>
+                </div>
+                <div class="col-span-2">
+                  <label>Ghi chú</label>
+                  <Input type="text" v-model="form.ghi_chu" />
+                </div>
+                <div class="col-span-2 flex gap-2 mt-4 justify-end">
+                  <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }}</Button>
+                  <Button type="button" variant="outline" @click="closeForm">Hủy</Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </teleport>
       </div>
     </div>
   </div>

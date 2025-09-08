@@ -25,6 +25,8 @@ const hoaDonForm = reactive({
   ngay_het_han: ''
 });
 
+const keyword = ref('');
+
 const hoaDonErrors = reactive<Record<string, string>>({});
 const hoaDonSuccess = ref('');
 
@@ -173,7 +175,12 @@ const exportHoaDonPDF = async (hd: any) => {
 
 // Lấy danh sách học sinh
 const fetchHocSinh = async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/hoc_sinhs');
+  //const response = await axios.get('http://127.0.0.1:8000/api/hoc_sinhs');
+  let url = 'http://127.0.0.1:8000/api/hoc_sinhs';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/hoc_sinhs/search?keyword=${keyword.value}`;
+  }
+  const response = await axios.get(url);
   hocSinhList.value = response.data;
 };
 
@@ -184,13 +191,24 @@ onMounted(fetchHocSinh);
   <div>
     <h1 class="text-lg font-bold mb-4">Hóa đơn học phí</h1>
 
+    <div class="mb-4 flex gap-4">
+      <Input
+        type="text"
+        v-model="keyword"
+        placeholder="Tìm kiếm theo mã HS hoặc họ tên..."
+        @input="fetchHocSinh"
+        class="flex-1"
+      />
+      <Button type="button" variant="outline" @click="fetchHocSinh">Tìm kiếm</Button>
+    </div>
+
     <!-- Bảng học sinh -->
     <DataTable :columns="columns" :data="hocSinhList"></DataTable>
 
     <!-- Modal hóa đơn -->
     <div
       v-if="showHoaDonModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
       <div class="bg-white p-6 rounded-lg w-[500px]">
         <h2 class="text-lg font-bold mb-4">

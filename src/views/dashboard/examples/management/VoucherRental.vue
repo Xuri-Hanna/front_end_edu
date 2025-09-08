@@ -13,8 +13,42 @@ const nhanVienList = ref<any[]>([]);
 const nguoiThueList = ref<any[]>([]);
 const phongHocList = ref<any[]>([]);
 
+// ================== Search ==================
+const searchKeyword = ref('');
+const searchFromDate = ref('');
+const searchToDate = ref('');
+const searchStatus = ref('');
+
+const resetSearch = () => {
+  searchKeyword.value = '';
+  searchFromDate.value = '';
+  searchToDate.value = '';
+  searchStatus.value = '';
+  fetchPhieu();
+};
+
 const errors = reactive<Record<string, string>>({});
 const successMessage = ref('');
+// Lưu thông báo thất bại
+const errorMessage = ref('');
+
+const showForm = ref(false);
+
+const openAddForm = () => {
+  resetForm();
+  showForm.value = true;
+};
+
+const editPhieu = (ph: PhieuPayload) => {
+  form.value = { ...ph };
+  showForm.value = true;
+};
+
+const closeForm = () => {
+  showForm.value = false;
+  resetForm();
+};
+
 
 // Popup xem phiếu
 const showViewPopup = ref(false);
@@ -109,6 +143,24 @@ const columns: ColumnDef<any>[] = [
 ];
 
 // ================== API Calls ==================
+
+const searchPhieu = async () => {
+  try {
+    const res = await axios.get('http://127.0.0.1:8000/api/phieu_thue_phongs/search', {
+      params: {
+        keyword: searchKeyword.value,
+        from_date: searchFromDate.value,
+        to_date: searchToDate.value,
+        status: searchStatus.value,
+      }
+    });
+    phieuList.value = res.data.data ?? res.data;
+  } catch (err) {
+    console.error("Lỗi khi tìm kiếm:", err);
+  }
+};
+
+
 const fetchPhieu = async () => {
   const res = await axios.get('http://127.0.0.1:8000/api/phieu_thue_phongs');
   phieuList.value = res.data.data ?? res.data;
@@ -170,20 +222,35 @@ const submitForm = async () => {
       await axios.post('http://127.0.0.1:8000/api/phieu_thue_phongs', form.value);
       successMessage.value = 'Thêm phiếu thuê thành công!';
     }
-    resetForm();
+    //resetForm();
     fetchPhieu();
+    closeForm();
   } catch (err) {
     console.error(err);
   }
 };
 
-const editPhieu = (ph: PhieuPayload) => {
-  form.value = { ...ph };
-};
+// const editPhieu = (ph: PhieuPayload) => {
+//   form.value = { ...ph };
+// };
 
 const deletePhieu = async (id: string) => {
-  await axios.delete(`http://127.0.0.1:8000/api/phieu_thue_phongs/${id}`);
-  fetchPhieu();
+  // await axios.delete(`http://127.0.0.1:8000/api/phieu_thue_phongs/${id}`);
+  // fetchPhieu();
+  successMessage.value = '';
+  errorMessage.value = '';
+  if (!confirm('Bạn có chắc muốn xóa phiếu thuê phòng này này?')) return;
+  try {
+    const res = await axios.delete(`http://127.0.0.1:8000/api/phieu_thue_phongs/${id}`);
+    successMessage.value = res.data.message;
+    fetchPhieu();
+  } catch (err: any) {
+    if (err.response && err.response.data.message) {
+      errorMessage.value = err.response.data.message;
+    } else {
+      errorMessage.value = 'Không thể xóa phiếu thuê phòng này!';
+    }
+  }
 };
 
 const resetForm = () => {
@@ -242,8 +309,8 @@ onMounted(() => {
   <div>
     <h1 class="text-lg font-bold mb-4">Quản lý Phiếu thuê phòng</h1>
     <!-- Form -->
-    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
-      <!-- Nhân viên -->
+    <!-- <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
+      
       <div class="grid gap-y-2">
         <label>Nhân viên</label>
         <select v-model="form.nhan_vien_id" class="border rounded p-2">
@@ -254,7 +321,7 @@ onMounted(() => {
         </select>
         <small v-if="errors.nhan_vien_id" class="text-red-500">{{ errors.nhan_vien_id }}</small>
       </div>
-      <!-- Người thuê -->
+      
       <div class="grid gap-y-2">
         <label>Người thuê</label>
         <select v-model="form.nguoi_thue_phong_id" class="border rounded p-2">
@@ -265,7 +332,7 @@ onMounted(() => {
         </select>
         <small v-if="errors.nguoi_thue_phong_id" class="text-red-500">{{ errors.nguoi_thue_phong_id }}</small>
       </div>
-      <!-- Phòng học -->
+      
       <div class="grid gap-y-2">
         <label>Phòng học</label>
         <select v-model="form.phong_hoc_id" class="border rounded p-2">
@@ -276,7 +343,7 @@ onMounted(() => {
         </select>
         <small v-if="errors.phong_hoc_id" class="text-red-500">{{ errors.phong_hoc_id }}</small>
       </div>
-      <!-- Ngày -->
+     
       <div class="grid gap-y-2">
         <label>Từ ngày</label>
         <Input type="date" v-model="form.tu_ngay" />
@@ -292,12 +359,12 @@ onMounted(() => {
         <Input type="date" v-model="form.ngay_lap" />
         <small v-if="errors.ngay_lap" class="text-red-500">{{ errors.ngay_lap }}</small>
       </div>
-      <!-- Lịch thuê -->
+      
       <div class="grid gap-y-2 col-span-2">
         <label>Lịch thuê</label>
         <Input type="text" v-model="form.lich_thue" placeholder="Nhập lịch thuê" />
       </div>
-      <!-- Trạng thái -->
+      
       <div class="grid gap-y-2 col-span-2">
         <label>Trạng thái</label>
         <select v-model="form.trang_thai" class="border rounded p-2">
@@ -306,17 +373,128 @@ onMounted(() => {
           <option value="Chưa có hợp đồng">Chưa có hợp đồng</option>
         </select>
       </div>
-      <!-- Nút -->
+      
       <div class="col-span-2 flex gap-2">
         <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Phiếu</Button>
         <Button type="button" variant="outline" @click="resetForm">Reset</Button>
       </div>
-    </form>
+    </form> -->
+
+    <!-- Nút mở form -->
+    <div class="mb-4">
+      <Button @click="openAddForm">+ Thêm Phiếu</Button>
+    </div>
+
+    <!-- Form popup -->
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-[700px]">
+        <h2 class="font-bold text-lg mb-4">
+          {{ form.id ? 'Sửa Phiếu thuê' : 'Thêm Phiếu thuê' }}
+        </h2>
+
+        <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4">
+          <!-- Nhân viên -->
+          <div>
+            <label>Nhân viên</label>
+            <select v-model="form.nhan_vien_id" class="border rounded p-2 w-full">
+              <option value="">-- Chọn nhân viên --</option>
+              <option v-for="nv in nhanVienList" :key="nv.id" :value="nv.id">{{ nv.ho_ten }}</option>
+            </select>
+            <small v-if="errors.nhan_vien_id" class="text-red-500">{{ errors.nhan_vien_id }}</small>
+          </div>
+          <!-- Người thuê -->
+          <div>
+            <label>Người thuê</label>
+            <select v-model="form.nguoi_thue_phong_id" class="border rounded p-2 w-full">
+              <option value="">-- Chọn người thuê --</option>
+              <option v-for="nt in nguoiThueList" :key="nt.id" :value="nt.id">{{ nt.ho_ten }}</option>
+            </select>
+            <small v-if="errors.nguoi_thue_phong_id" class="text-red-500">{{ errors.nguoi_thue_phong_id }}</small>
+          </div>
+          <!-- Phòng học -->
+          <div>
+            <label>Phòng học</label>
+            <select v-model="form.phong_hoc_id" class="border rounded p-2 w-full">
+              <option value="">-- Chọn phòng học --</option>
+              <option v-for="ph in phongHocList" :key="ph.id" :value="ph.id">{{ ph.so_phong }}</option>
+            </select>
+            <small v-if="errors.phong_hoc_id" class="text-red-500">{{ errors.phong_hoc_id }}</small>
+          </div>
+          <!-- Ngày -->
+          <div>
+            <label>Từ ngày</label>
+            <Input type="date" v-model="form.tu_ngay" />
+          </div>
+          <div>
+            <label>Đến ngày</label>
+            <Input type="date" v-model="form.den_ngay" />
+          </div>
+          <div>
+            <label>Ngày lập</label>
+            <Input type="date" v-model="form.ngay_lap" />
+          </div>
+          <!-- Lịch thuê -->
+          <div class="col-span-2">
+            <label>Lịch thuê</label>
+            <Input type="text" v-model="form.lich_thue" placeholder="Nhập lịch thuê" />
+          </div>
+          <!-- Trạng thái -->
+          <div class="col-span-2">
+            <label>Trạng thái</label>
+            <select v-model="form.trang_thai" class="border rounded p-2 w-full">
+              <option value="">-- Chọn trạng thái --</option>
+              <option value="Đã có hợp đồng">Đã có hợp đồng</option>
+              <option value="Chưa có hợp đồng">Chưa có hợp đồng</option>
+            </select>
+          </div>
+
+          <!-- Nút -->
+          <div class="col-span-2 flex gap-2 justify-end mt-4">
+            <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm Phiếu' }}</Button>
+            <Button type="button" variant="outline" @click="closeForm">Đóng</Button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Thông báo -->
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
     </div>
+
+    <div v-if="errorMessage" class="mb-4 text-red-600 font-semibold">
+      {{ errorMessage }}
+    </div> 
+
+    <!-- Tìm kiếm -->
+    <div class="flex gap-2 items-end mb-4">
+      <div>
+        <label class="block text-sm font-medium">Từ khóa</label>
+        <Input v-model="searchKeyword" placeholder="Nhập mã phiếu, nhân viên, người thuê..." />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Từ ngày</label>
+        <Input type="date" v-model="searchFromDate" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Đến ngày</label>
+        <Input type="date" v-model="searchToDate" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Trạng thái</label>
+        <select v-model="searchStatus" class="border rounded p-2">
+          <option value="">-- Tất cả --</option>
+          <option value="Đã có hợp đồng">Đã có hợp đồng</option>
+          <option value="Chưa có hợp đồng">Chưa có hợp đồng</option>
+        </select>
+      </div>
+      <div>
+        <Button @click="searchPhieu">Tìm kiếm</Button>
+        <Button variant="outline" @click="resetSearch">Reset</Button>
+      </div>
+      
+    </div>
+
 
     <!-- Bảng -->
     <DataTable :columns="columns" :data="phieuList" />
@@ -343,7 +521,7 @@ onMounted(() => {
               </div>
               <div class="space-y-1">
                 <p><b>Phòng:</b> {{ selectedPhieu?.phong?.so_phong  }}</p>
-                <p><b>Gía phòng</b> {{ selectedPhieu?.phong?.gia_phong .toLocaleString() }} VNĐ</p>
+                <p><b>Giá phòng</b> {{ selectedPhieu?.phong?.gia_phong .toLocaleString() }} VNĐ</p>
               </div>
             </div>
             <div class="absolute text-xs text-gray-500">

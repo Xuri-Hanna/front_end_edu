@@ -351,9 +351,9 @@ export const TEACHER_MENU: Record<string, Menu> = {
 
 export function getMenuByRole(role?: string) {
   switch (role) {
-    case 'CV01': return ADMIN_MENU
-    case 'CV02': return STAFF_MENU
-    case 'CV03': return TEACHER_MENU
+    case 'CV001': return ADMIN_MENU
+    case 'CV002': return STAFF_MENU
+    case 'CV003': return TEACHER_MENU
     default: return {}
   };
 }

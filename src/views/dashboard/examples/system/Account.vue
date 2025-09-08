@@ -13,6 +13,26 @@ const errors = reactive<Record<string, string>>({});
 
 // Lưu thông báo thành công
 const successMessage = ref('');
+const errorMessage = ref('');
+
+// Quản lý popup
+const showForm = ref(false);
+
+const openAddForm = () => {
+  resetForm();
+  showForm.value = true;
+};
+
+const editTaiKhoan = (tk: TaiKhoanPayload) => {
+  form.value = { ...tk };
+  showForm.value = true;
+};
+
+const closeForm = () => {
+  showForm.value = false;
+  resetForm();
+};
+
 
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
@@ -53,6 +73,8 @@ const form = ref<TaiKhoanPayload>({
   password: ''
 });
 
+const keyword = ref('');
+
 // Tạo ID random 10 chữ số
 const generateRandomId = () => {
   return Math.floor(1000000000 + Math.random() * 9000000000).toString();
@@ -60,7 +82,12 @@ const generateRandomId = () => {
 
 // Lấy danh sách tài khoản
 const fetchTaiKhoan = async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/tai_khoans');
+  //const response = await axios.get('http://127.0.0.1:8000/api/tai_khoans');
+  let url = 'http://127.0.0.1:8000/api/tai_khoans';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/tai_khoans/search?keyword=${keyword.value}`;
+  }
+  const response = await axios.get(url);
   taiKhoanList.value = response.data;
 };
 
@@ -113,14 +140,26 @@ const submitForm = async () => {
 };
 
 // Chỉnh sửa tài khoản
-const editTaiKhoan = (tk: TaiKhoanPayload) => {
-  form.value = { ...tk };
-};
+// const editTaiKhoan = (tk: TaiKhoanPayload) => {
+//   form.value = { ...tk };
+// };
 
 // Xóa tài khoản
+// const deleteTaiKhoan = async (id: string) => {
+//   await axios.delete(`http://127.0.0.1:8000/api/tai_khoans/${id}`);
+//   fetchTaiKhoan();
+// };
+
+// Xóa
 const deleteTaiKhoan = async (id: string) => {
-  await axios.delete(`http://127.0.0.1:8000/api/tai_khoans/${id}`);
-  fetchTaiKhoan();
+  if (!confirm('Bạn có chắc muốn xóa tài khoản này?')) return;
+  try {
+    await axios.delete(`http://127.0.0.1:8000/api/tai_khoans/${id}`);
+    successMessage.value = 'Xóa tài khoản thành công!';
+    fetchTaiKhoan();
+  } catch (err) {
+    errorMessage.value = 'Không thể xóa tài khoản này!';
+  }
 };
 
 // Reset form
@@ -138,7 +177,7 @@ onMounted(fetchTaiKhoan);
 <template>
   <div>
     <h1 class="text-lg font-bold mb-4">Quản lý Tài khoản</h1>
-    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
+    <!-- <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
       <div class="grid gap-y-2">
         <label>Username</label>
         <Input type="text" v-model="form.username" />
@@ -153,11 +192,60 @@ onMounted(fetchTaiKhoan);
         <Button type="submit">{{ form.ID ? 'Cập nhật' : 'Thêm' }} Tài khoản</Button>
         <Button type="button" variant="outline" @click="resetForm">Reset</Button>
       </div>
-    </form>
+    </form> -->
+
+    <!-- Nút mở form -->
+    <div class="mb-4">
+      <Button @click="openAddForm">+ Thêm Tài khoản</Button>
+    </div>
+
+    <!-- Popup form -->
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-[500px]">
+        <h2 class="font-bold text-lg mb-4">
+          {{ form.ID ? 'Sửa Tài khoản' : 'Thêm Tài khoản' }}
+        </h2>
+
+        <form @submit.prevent="submitForm" class="grid grid-cols-1 gap-4">
+          <div>
+            <label>Username</label>
+            <Input type="text" v-model="form.username" />
+            <small v-if="errors.username" class="text-red-500">{{ errors.username }}</small>
+          </div>
+
+          <div>
+            <label>Password</label>
+            <Input type="password" v-model="form.password" />
+            <small v-if="errors.password" class="text-red-500">{{ errors.password }}</small>
+          </div>
+          
+          <div class="flex gap-2 justify-end mt-4">
+            <Button type="submit">{{ form.ID ? 'Cập nhật' : 'Thêm' }}</Button>
+            <Button type="button" variant="outline" @click="closeForm">Đóng</Button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
     </div>
+
+    <div v-if="errorMessage" class="mb-4 text-red-600 font-semibold">
+      {{ errorMessage }}
+    </div>
+
+    <div class="mb-4 flex gap-4">
+      <Input
+        type="text"
+        v-model="keyword"
+        placeholder="Tìm kiếm theo tên tài khoản hoặc mật khẩu..."
+        @input="fetchTaiKhoan"
+        class="flex-1"
+      />
+      <Button type="button" variant="outline" @click="fetchTaiKhoan">Tìm kiếm</Button>
+    </div>
+
 
     <DataTable :columns="columns" :data="taiKhoanList"></DataTable>
   </div>

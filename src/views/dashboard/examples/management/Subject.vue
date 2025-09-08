@@ -15,6 +15,23 @@ const errors = reactive<Record<string, string>>({});
 const successMessage = ref('');
 const messageType = ref<'success' | 'error'>('success');
 
+const showForm = ref(false);
+
+const openAddForm = () => {
+  resetForm();
+  showForm.value = true;
+};
+
+const editMonHoc = (mh: MonHocPayload) => {
+  form.value = { ...mh };
+  showForm.value = true;
+};
+
+const closeForm = () => {
+  showForm.value = false;
+  resetForm();
+};
+
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
   { accessorKey: 'id', header: 'Mã MH' },
@@ -95,8 +112,9 @@ const submitForm = async () => {
       successMessage.value = 'Thêm môn học thành công!';
       messageType.value = 'success';
     }
-    resetForm();
+    //resetForm();
     fetchMonHoc();
+    closeForm();
   } catch (err: any) {
     if (err.response && err.response.status === 422) {
       // lỗi đã tồn tại
@@ -110,9 +128,9 @@ const submitForm = async () => {
 };
 
 // Chỉnh sửa môn học
-const editMonHoc = (mh: MonHocPayload) => {
-  form.value = { ...mh };
-};
+// const editMonHoc = (mh: MonHocPayload) => {
+//   form.value = { ...mh };
+// };
 
 // Xóa môn học
 const deleteMonHoc = async (id: string) => {
@@ -136,7 +154,7 @@ onMounted(fetchMonHoc);
 <template>
   <div>
     <h1 class="text-lg font-bold mb-4">Quản lý Môn học</h1>
-    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
+    <!-- <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
       <div>
         <label>Tên môn học</label>
         <Input type="text" v-model="form.mon_hoc" />
@@ -160,7 +178,48 @@ onMounted(fetchMonHoc);
         <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Môn học</Button>
         <Button type="button" variant="outline" @click="resetForm">Reset</Button>
       </div>
-    </form>
+    </form> -->
+
+    <!-- Nút mở form -->
+    <div class="mb-4">
+      <Button @click="openAddForm">+ Thêm môn học</Button>
+    </div>
+
+    <!-- Form popup -->
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-[500px]">
+        <h2 class="font-bold text-lg mb-4">
+          {{ form.id ? 'Sửa Môn học' : 'Thêm Môn học' }}
+        </h2>
+
+        <form @submit.prevent="submitForm" class="grid grid-cols-1 gap-4">
+          <div>
+            <label>Tên môn học</label>
+            <Input type="text" v-model="form.mon_hoc" />
+            <small v-if="errors.mon_hoc" class="text-red-500">{{ errors.mon_hoc }}</small>
+          </div>
+          <div>
+            <label>Khối lớp</label>
+            <select v-model="form.khoi_lop" class="border rounded p-2 w-full">
+              <option value="">-- Chọn khối lớp --</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+            </select>
+            <small v-if="errors.khoi_lop" class="text-red-500">{{ errors.khoi_lop }}</small>
+          </div>
+          <div>
+            <label>Năm học</label>
+            <Input type="text" v-model="form.nam_hoc" placeholder="VD: 2025-2026" />
+            <small v-if="errors.nam_hoc" class="text-red-500">{{ errors.nam_hoc }}</small>
+          </div>
+          <div class="flex gap-2 justify-end mt-4">
+            <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm môn học' }}</Button>
+            <Button type="button" variant="outline" @click="closeForm">Đóng</Button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <p v-if="successMessage" 
       :class="messageType === 'success' ? 'text-green-500' : 'text-red-500'">

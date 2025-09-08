@@ -16,6 +16,9 @@ const successMessage = ref('');
 // Lưu thông báo thất bại
 const errorMessage = ref('');
 
+// Trạng thái hiển thị form
+const showForm = ref(false);
+
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
   { accessorKey: 'id', header: 'Mã NTP' },
@@ -58,6 +61,24 @@ const form = ref<NguoiThuePayload>({
 });
 const keyword = ref('');
 
+// Mở popup thêm
+const openAddForm = () => {
+  resetForm();
+  showForm.value = true;
+};
+
+// Mở popup sửa
+const editNguoiThue = (ntp: NguoiThuePayload) => {
+  form.value = { ...ntp };
+  showForm.value = true;
+};
+
+// Đóng popup
+const closeForm = () => {
+  showForm.value = false;
+  resetForm();
+};
+
 // Lấy danh sách người thuê phòng
 const fetchNguoiThue = async () => {
   //const response = await axios.get('http://127.0.0.1:8000/api/nguoi_thue_phongs');
@@ -83,9 +104,9 @@ const validateForm = () => {
     errors.gioi_tinh = 'Giới tính là bắt buộc';
     isValid = false;
   } else {
-    const gioiTinhHopLe = ['nam', 'nữ', 'khác'];
+    const gioiTinhHopLe = ['nam', 'nữ'];
     if (!gioiTinhHopLe.includes(form.value.gioi_tinh.toLowerCase())) {
-      errors.gioi_tinh = 'Giới tính chỉ được là "Nam", "Nữ" hoặc "Khác"';
+      errors.gioi_tinh = 'Giới tính chỉ được là "Nam", "Nữ"';
       isValid = false;
     }
   }
@@ -131,8 +152,9 @@ const submitForm = async () => {
       await axios.post('http://127.0.0.1:8000/api/nguoi_thue_phongs', form.value);
       successMessage.value = 'Thêm người thuê phòng thành công!';
     }
-    resetForm();
+    //resetForm();
     fetchNguoiThue();
+    closeForm();
   } catch (err: any) {
     if (err.response && err.response.status === 422) {
       const validationErrors = err.response.data.errors;
@@ -146,9 +168,9 @@ const submitForm = async () => {
 };
 
 // Chỉnh sửa người thuê
-const editNguoiThue = (ntp: NguoiThuePayload) => {
-  form.value = { ...ntp };
-};
+// const editNguoiThue = (ntp: NguoiThuePayload) => {
+//   form.value = { ...ntp };
+// };
 
 // Xóa người thuê
 const deleteNguoiThue = async (id: string) => {
@@ -189,7 +211,7 @@ onMounted(fetchNguoiThue);
 <template>
   <div>
     <h1 class="text-lg font-bold mb-4">Quản lý Người thuê phòng</h1>
-    <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
+    <!-- <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
       <div>
         <label>Họ tên</label>
         <Input type="text" v-model="form.ho_ten" />
@@ -224,10 +246,66 @@ onMounted(fetchNguoiThue);
         <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Người thuê</Button>
         <Button type="button" variant="outline" @click="resetForm">Reset</Button>
       </div>
-    </form>
+    </form> -->
+
+     <!-- Nút mở form -->
+    <div class="mb-4">
+      <Button @click="openAddForm">+ Thêm người thuê phòng</Button>
+    </div>
+
+    <!-- Popup form -->
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-[600px]">
+        <h2 class="font-bold text-lg mb-4">
+          {{ form.id ? 'Sửa Người thuê' : 'Thêm Người thuê' }}
+        </h2>
+
+        <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Họ tên</label>
+            <Input type="text" v-model="form.ho_ten" />
+            <small v-if="errors.ho_ten" class="text-red-500">{{ errors.ho_ten }}</small>
+          </div>
+          <div>
+            <label>Giới tính</label>
+            <Input type="text" v-model="form.gioi_tinh" placeholder="Nam/Nữ"/>
+            <small v-if="errors.gioi_tinh" class="text-red-500">{{ errors.gioi_tinh }}</small>
+          </div>
+          <div>
+            <label>SĐT</label>
+            <Input type="text" v-model="form.so_dien_thoai" />
+            <small v-if="errors.so_dien_thoai" class="text-red-500">{{ errors.so_dien_thoai }}</small>
+          </div>
+          <div>
+            <label>CCCD</label>
+            <Input type="text" v-model="form.cccd" />
+            <small v-if="errors.cccd" class="text-red-500">{{ errors.cccd }}</small>
+          </div>
+          <div>
+            <label>Địa chỉ</label>
+            <Input type="text" v-model="form.dia_chi" />
+            <small v-if="errors.dia_chi" class="text-red-500">{{ errors.dia_chi }}</small>
+          </div>
+          <div>
+            <label>Email</label>
+            <Input type="text" v-model="form.email" />
+            <small v-if="errors.email" class="text-red-500">{{ errors.email }}</small>
+          </div>
+
+          <div class="col-span-2 flex gap-2 justify-end mt-4">
+            <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }}</Button>
+            <Button type="button" variant="outline" @click="closeForm">Đóng</Button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
+    </div>
+
+    <div v-if="errorMessage" class="mb-4 text-red-600 font-semibold">
+      {{ errorMessage }}
     </div>
 
     <div class="mb-4 flex gap-4">
