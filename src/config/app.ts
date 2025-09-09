@@ -122,7 +122,7 @@ export const ADMIN_MENU: Record<string, Menu> = {
     children: [
       {
         title: 'Danh sách tài khoản',
-        icon: 'BetweenHorizontalEnd',
+        icon: 'Computer',
         path: 'tai_khoan'
       },
       {
@@ -178,7 +178,7 @@ export const ADMIN_MENU: Record<string, Menu> = {
       },
       {
         title: 'Học sinh',
-        icon: 'MemoryStick',
+        icon: 'BetweenHorizontalEnd',
         path: 'hoc_sinh',
       },
       {
@@ -199,22 +199,22 @@ export const ADMIN_MENU: Record<string, Menu> = {
     children: [
       {
         title: 'Hóa đơn học phí',
-        icon: 'User',
+        icon: 'ReceiptText',
         path: 'hoa_don_hoc_phi'
       },
       {
         title: 'Hóa đơn thuê phòng',
-        icon: 'User',
+        icon: 'ReceiptText',
         path: 'hoa_don_thue_phong'
       },
       {
         title: 'Hợp đồng thuê phòng',
-        icon: 'User',
+        icon: 'ReceiptText',
         path: 'hop_dong_thue_phong'
       },
       {
         title: 'Phiếu thuê phòng',
-        icon: 'User',
+        icon: 'ReceiptText',
         path: 'phieu_thue_phong'
       },
     ]
@@ -225,12 +225,12 @@ export const ADMIN_MENU: Record<string, Menu> = {
     children: [
       {
         title: 'Thống kê thuê phòng',
-        icon: 'User',
+        icon: 'Waypoints',
         path: 'thong_ke_thue_phong'
       },
       {
         title: 'Thống kê giáo dục',
-        icon: 'User',
+        icon: 'Waypoints',
         path: 'thong_ke_giao_duc'
       },
     ]
@@ -271,7 +271,7 @@ export const STAFF_MENU: Record<string, Menu> = {
       },
       {
         title: 'Học sinh',
-        icon: 'MemoryStick',
+        icon: 'BetweenHorizontalEnd',
         path: 'hoc_sinh',
       },
       {
@@ -292,22 +292,22 @@ export const STAFF_MENU: Record<string, Menu> = {
     children: [
       {
         title: 'Hóa đơn học phí',
-        icon: 'User',
+        icon: 'ReceiptText',
         path: 'hoa_don_hoc_phi'
       },
       {
         title: 'Hóa đơn thuê phòng',
-        icon: 'User',
+        icon: 'ReceiptText',
         path: 'hoa_don_thue_phong'
       },
       {
         title: 'Hợp đồng thuê phòng',
-        icon: 'User',
+        icon: 'ReceiptText',
         path: 'hop_dong_thue_phong'
       },
       {
         title: 'Phiếu thuê phòng',
-        icon: 'User',
+        icon: 'ReceiptText',
         path: 'phieu_thue_phong'
       },
     ]
@@ -318,13 +318,13 @@ export const STAFF_MENU: Record<string, Menu> = {
     children: [
       {
         title: 'Thống kê học phí',
-        icon: 'User',
-        path: ''
+        icon: 'Waypoints',
+        path: 'thong_ke_thue_phong'
       },
       {
         title: 'Thống kê học sinh',
-        icon: 'User',
-        path: ''
+        icon: 'Waypoints',
+        path: 'thong_ke_giao_duc'
       },
     ]
   }

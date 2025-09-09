@@ -125,6 +125,7 @@ const viewHoaDon = async (hopDongId: string) => {
   // hoaDonList.value = (res.data.data ?? []).sort((a, b) => (a.trang_thai === 'Chưa thanh toán' ? -1 : 1));
   // showHoaDonList.value = true;
 
+  //cái này t sửa từ lâu r nhé 
   const res = await axios.get(
     `http://127.0.0.1:8000/api/hoa_don_thue_phong/hop_dong/${hopDongId}`
   );
@@ -195,7 +196,7 @@ onMounted(() => {
     <DataTable :columns="columns" :data="filteredHopDongList" />
 
     <!-- Modal tạo hóa đơn -->
-    <div v-if="showHoaDonModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div v-if="showHoaDonModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg w-[500px]">
         <h2 class="text-lg font-bold mb-4">Tạo hóa đơn cho HĐ: {{ selectedHopDong?.id }}</h2>
 

@@ -16,9 +16,9 @@ onMounted(() => {
 // Xác định đường dẫn home theo role
 const homePath = computed(() => {
   switch (authStore.role) {
-    case 'CV01': return '/admin/dashboard';
-    case 'CV02': return '/staff/dashboard';
-    case 'CV03': return '/teacher/dashboard';
+    case 'CV001': return '/admin/dashboard';
+    case 'CV002': return '/staff/dashboard';
+    case 'CV003': return '/teacher/dashboard';
     default:     return '/login'; // fallback nếu chưa đăng nhập
   }
 });

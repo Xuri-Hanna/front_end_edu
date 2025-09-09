@@ -38,6 +38,8 @@ const lopHocStatus = ref<any[]>([])
 const topGiaoVien = ref<any[]>([])
 const topMonHoc = ref<any[]>([])
 
+const showReport = ref(false)
+
 // --- Fetch API ---
 const fetchDoanhthu = async () => {
   try {
@@ -104,6 +106,7 @@ const fetchDoanhThuThang = async () => {
   }
 }
 
+//Đổi màu cột ở đây
 const chartData = computed(() => ({
   labels: doanhThuThang.value.map(item => item.thang),
   datasets: [
@@ -137,6 +140,21 @@ const downloadChart = async () => {
   link.href = canvas.toDataURL("image/png")
   link.click()
 }
+const reportRef = ref<HTMLDivElement | null>(null)
+
+const downloadPDF = () => {
+  if (!reportRef.value) return
+
+  const opt = {
+    margin:       0.5,
+    filename:     'bao_cao_thong_ke.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+  }
+
+  html2pdf().set(opt).from(reportRef.value).save()
+}
 
 const fetchDuLieu = () => {
   fetchDoanhthu()
@@ -162,10 +180,9 @@ onMounted(() => {
         <input type="date" v-model="endDate" class="border rounded px-2 py-1" />
         <Button @click="fetchDuLieu" variant="secondary">Cập nhật</Button>
 
-        <Button>Tải xuống</Button>
+        <Button @click="showReport = true" variant="secondary">Tải xuống</Button>
       </div>
     </page-header>
-
     <Tabs default-value="overview" class="space-y-4">
       <TabsContent value="overview" class="space-y-4">
         <!-- Báo cáo chung -->
@@ -352,4 +369,88 @@ onMounted(() => {
       </TabsContent>
     </Tabs>
   </div>
+  <!-- Popup -->
+  <div v-if="showReport" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg w-[800px] max-h-[90vh] overflow-y-auto p-4">
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b pb-2 mb-4">
+          <h2 class="text-lg font-bold">Báo cáo doanh thu</h2>
+          <button @click="showReport = false" class="text-gray-600 hover:text-black">✕</button>
+        </div>
+      <div ref="reportRef" class="p-4">
+      <!-- Tiêu đề -->
+      <h2 class="text-center text-xl font-bold mb-2">
+        Báo cáo doanh thu học phí
+      </h2>
+      <p class="text-center mb-4">
+        Từ ngày: {{ startDate }} &nbsp;&nbsp; đến ngày: {{ endDate }}
+      </p>
+
+      <!-- Doanh thu, học sinh, trạng thái -->
+      <p><span class="font-bold text-red-600">Doanh thu:</span> {{ tongDoanhThu.toLocaleString() }} VNĐ</p>
+      <p><span class="font-bold">Số học sinh:</span> {{ soHocSinh }}</p>
+
+      <p class="mt-2 font-bold">Trạng thái lớp học:</p>
+      <ul>
+        <li v-for="(item, index) in lopHocStatus" :key="index">
+          {{ item.name }}: <span class="font-bold">{{ item.value }}</span>
+        </li>
+      </ul>
+
+      <!-- Bảng giáo viên -->
+      <p class="mt-4 mb-2 font-bold">Số lớp của giáo viên:</p>
+      <table class="w-full border-collapse border mb-6">
+        <thead>
+          <tr>
+            <th class="border p-1">STT</th>
+            <th class="border p-1">Tên giáo viên</th>
+            <th class="border p-1">Số lớp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(gv, index) in topGiaoVien" :key="gv.id">
+            <td class="border p-1">{{ index + 1 }}</td>
+            <td class="border p-1">{{ gv.ten }}</td>
+            <td class="border p-1">{{ gv.so_lop }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Bảng môn học -->
+      <p class="mt-4 mb-2 font-bold">Số lớp của các lớp học:</p>
+      <table class="w-full border-collapse border mb-6">
+        <thead>
+          <tr>
+            <th class="border p-1">STT</th>
+            <th class="border p-1">Môn học</th>
+            <th class="border p-1">Số lớp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(mon, index) in topMonHoc" :key="mon.id">
+            <td class="border p-1">{{ index + 1 }}</td>
+            <td class="border p-1">{{ mon.mon }}</td>
+            <td class="border p-1">{{ mon.so_lop }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Biểu đồ -->
+      <p class="mt-4 font-bold">Doanh thu học phí theo tháng:</p>
+      <div class="h-[300px]" ref="chartRef">
+        <Bar
+          :data="chartData"
+          :options="chartOptions"
+        />
+      </div>
+    </div>
+    <!-- Footer -->
+    <div class="mt-4 flex justify-end space-x-2">
+      <Button @click="downloadPDF" variant="secondary">In PDF</Button>
+      <Button @click="showReport = false" variant="destructive">Đóng</Button>
+    </div>
+  </div>
+</div>
 </template>
+
+

@@ -260,7 +260,9 @@ const resetForm = () => {
     phong_hoc_id: '',
     tu_ngay: '',
     den_ngay: '',
-    lich_thue: ''
+    lich_thue: '',
+    trang_thai: '',
+    ngay_lap: ''
   };
   Object.keys(errors).forEach(k => (errors[k] = ''));
 };
@@ -501,10 +503,10 @@ onMounted(() => {
     <!-- Popup xem phiếu -->
     <div
       v-if="showViewPopup"
-      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
       @click.self="showViewPopup = false"
     >
-      <div class="bg-white rounded-lg p-6 min-w-[400px] shadow-lg">
+      <div class="bg-white rounded-lg p-6 min-w-[400px] shadow-lg ">
         <div class="phieu-thue" :id="`phieu-thue-${selectedPhieu?.id}`">
             <h3 class="font-semibold text-center text-xl mb-2">Phiếu thuê phòng</h3>
             <h6 class="font-semibold text-center text-sm mb-2">{{ selectedPhieu?.id }}</h6>

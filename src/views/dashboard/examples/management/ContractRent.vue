@@ -330,18 +330,18 @@ onMounted(() => {
 
 
     <!-- Popup tạo hợp đồng -->
-    <div v-if="showHopDongForm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white p-6 rounded shadow-lg w-96">
+    <div v-if="showHopDongForm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="bg-white p-6 rounded shadow-lg w-96 ">
         <h2 class="text-lg font-bold mb-4">
           Tạo hợp đồng cho phiếu {{ selectedPhieuForHopDong?.id }}
         </h2>
-        <div class="grid gap-y-2 mb-4">
+        <div class="grid gap-y-2 mb-4 ">
           <label>Điều khoản</label>
           <QuillEditor
             v-model:content="hopDongForm.dieu_khoan"
             contentType="html"
             theme="snow"
-            @update:content="val => hopDongForm.dieu_khoan = val"
+            @update:content="(val: string) => hopDongForm.dieu_khoan = val"
           />
         </div>
         <div class="grid gap-y-2">

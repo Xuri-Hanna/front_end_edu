@@ -114,7 +114,7 @@ const showHoaDonList = ref(false);
 
 const viewHoaDon = async (hocSinhId: string) => {
   const res = await axios.get(`http://127.0.0.1:8000/api/hoa_don/hoc_sinh/${hocSinhId}`);
-  hoaDonList.value = res.data.sort((a, b) => (a.trang_thai === 'Chưa thanh toán' ? -1 : 1));
+  //hoaDonList.value = res.data.sort((a, b) => (a.trang_thai === 'Chưa thanh toán' ? -1 : 1));
   hoaDonList.value = res.data;
   showHoaDonList.value = true;
   console.log('DU LIUE',res.data);
