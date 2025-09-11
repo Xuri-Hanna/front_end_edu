@@ -15,6 +15,7 @@ import {
   BarElement,
   LinearScale
 } from "chart.js"
+import type { TooltipItem } from "chart.js"
 import html2pdf from "html2pdf.js"
 import html2canvas from "html2canvas"
 
@@ -253,20 +254,14 @@ const fetchDoanhThuThuePhong = async () => {
   }
 }
 
-const chartRef = ref<HTMLDivElement | null>(null)
+const chartWrapper = ref<HTMLDivElement | null>(null)
 
 const downloadChart = async () => {
-  if (!chartRef.value) return
+  if (!chartWrapper.value) return
 
-  const el = chartRef.value.querySelector("canvas") // chỉ cần lấy thẳng canvas
-  if (!el) {
-    console.error("Không tìm thấy canvas của biểu đồ")
-    return
-  }
-
-  const canvas = await html2canvas(el, { scale: 2 })
+  const canvas = await html2canvas(chartWrapper.value, { scale: 2 })
   const link = document.createElement("a")
-  link.download = "doanh_thu_thue_phong.png"
+  link.download = "doanh_thu_hoc_phi.png"
   link.href = canvas.toDataURL("image/png")
   link.click()
 }
@@ -284,7 +279,7 @@ const chartDataThuePhong = computed(() => ({
 
 const chartOptionsThuePhong = {
   responsive: true,
-  maintainAspectRatio: false
+  maintainAspectRatio: false,
 }
 
 const showReport = ref(false)
@@ -574,25 +569,37 @@ onMounted(() => {
               </div>
             </CardHeader>
             <CardContent>
-              <div class="h-[300px]" ref="chartRef">
-                <Bar
-                  :data="{
-                    labels: doanhThuThuePhong.map(item => item.thang),
-                    datasets: [
-                      {
-                        label: 'Doanh thu (VNĐ)',
-                        data: doanhThuThuePhong.map(item => item.doanh_thu),
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)'
-                      }
-                    ]
-                  }"
-                  :options="{ responsive: true, plugins: { legend: { position: 'top' } } }"
-                />
+              <div ref="chartWrapper">
+                <div class="h-[300px]">
+                  <Bar
+                    :data="{
+                      labels: doanhThuThuePhong.map(item => item.thang),
+                      datasets: [
+                        {
+                          label: 'Doanh thu (VNĐ)',
+                          data: doanhThuThuePhong.map(item => item.doanh_thu),
+                          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                        }
+                      ]
+                    }"
+                    :options="{ responsive: true, plugins: { legend: { position: 'top' } } }"
+                  />
+                </div>
+                <!-- Phần bảng số liệu theo tháng -->
+                <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
+                  <div
+                    v-for="(value, index) in chartDataThuePhong.datasets[0].data"
+                    :key="index"
+                    class="text-left"
+                  >
+                    <span class="font-semibold">Tháng {{ index + 1 }}:</span>
+                    {{ new Intl.NumberFormat('vi-VN').format(value) }} đ
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
-        
       </TabsContent>
     </Tabs>
 
@@ -663,11 +670,26 @@ onMounted(() => {
             </li>
           </ul>
           <p class="mt-4 font-bold">Doanh thu thuê phòng theo tháng:</p>
-          <div class="h-[300px]" ref="chartRef">
-            <Bar
-              :data="chartDataThuePhong"
-              :options="chartOptionsThuePhong"
-            />
+          <div class="page-break-avoid">
+            <div class="h-[300px]" ref="chartRef" >
+              <Bar
+                :data="chartDataThuePhong"
+                :options="chartOptionsThuePhong"
+              />
+            </div>
+          </div>
+          <!-- Bảng số liệu theo tháng -->
+          <div class="page-break-avoid">
+            <div class="grid grid-cols-3 gap-4 text-sm">
+              <div
+                v-for="(item, index) in doanhThuThuePhong"
+                :key="index"
+                class="text-left"
+              >
+                <span class="font-semibold">Tháng {{ item.thang }}:</span>
+                {{ new Intl.NumberFormat('vi-VN').format(item.doanh_thu) }} đ
+              </div>
+            </div>
           </div>
         </div>
 

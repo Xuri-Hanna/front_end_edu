@@ -131,12 +131,34 @@ const hopDongForm = ref({
 });
 
 // ========= Điều khoản mặc định =========
+// const DEFAULT_DIEU_KHOAN = `
+//   <h3>Điều khoản hợp đồng mặc định</h3>
+//   <p><b>Điều 1:</b> Bên A đồng ý cho Bên B thuê phòng theo thỏa thuận.</p>
+//   <p><b>Điều 2:</b> Bên B có trách nhiệm sử dụng phòng đúng mục đích, không được tự ý chuyển nhượng.</p>
+//   <p><b>Điều 3:</b> Hai bên cam kết thực hiện đúng các điều khoản đã ký.</p>
+//   <p><b>Điều 4:</b> Hợp đồng có hiệu lực kể từ ngày ký.</p>
+// `;
+
 const DEFAULT_DIEU_KHOAN = `
-  <h3>Điều khoản hợp đồng mặc định</h3>
-  <p><b>Điều 1:</b> Bên A đồng ý cho Bên B thuê phòng theo thỏa thuận.</p>
-  <p><b>Điều 2:</b> Bên B có trách nhiệm sử dụng phòng đúng mục đích, không được tự ý chuyển nhượng.</p>
-  <p><b>Điều 3:</b> Hai bên cam kết thực hiện đúng các điều khoản đã ký.</p>
-  <p><b>Điều 4:</b> Hợp đồng có hiệu lực kể từ ngày ký.</p>
+  <p><b>ĐIỀU 3: ĐIỀU KHOẢN THANH TOÁN</b></p>
+  <p>Đợt 1. Bên A tạm ứng trước 50% giá trị thỏa thuận cho bên B tại điều 2 tương ứng ............ cho bên B trước ngày .............</p>
+  <p>Đợt 2. Bên A thanh toán số tiền còn lại cho bên B là .............. cùng với các chi phí phát sinh trước ngày .............</p>
+  <p><b>ĐIỀU 4: QUYỀN VÀ TRÁCH NHIỆM CỦA BÊN A</b></p>
+  <p>4.1. Chịu trách nhiệm trước pháp luật nếu sử dụng dịch vụ trái với pháp luật nước Cộng hòa xã hội chủ nghĩa Việt Nam và các điều khoản quy định trong hợp đồng này.</p>
+  <p>4.2. Phối hợp với bên B về việc sắp xếp phòng học theo yêu cầu.</p>
+  <p>4.3. Có trách nhiệm thông báo nội quy phòng học theo quy định của bên B cho học viên trong thời gian sử dụng phòng học của bên B.<p>
+  <p>4.4. Chỉ được phép sử dụng phòng học để đào tạo các chương trình phù hợp với cấp phép của mình và không thuộc trong diện không cho phép của các cơ quan quản lý nhà nước. Nếu vi phạm thì hoàn toàn phải chịu trách nhiệm trước pháp luật. <p>
+  <p>4.5. Thanh toán chi phí theo đúng thời hạn của hợp đồng và các chi phí phát sinh (nếu có).</p>
+  <p><b>ĐIỀU 5: QUYỀN VÀ TRÁCH NHIỆM CỦA BÊN B</b></p>
+  <p>5.1. Cử nhân viên phối hợp với bên A chuẩn bị phòng học.</p>
+  <p>5.2. Xuất hóa đơn tài chính hợp lệ cho bên A.<p>
+  <p>5.3. Bố trí người dọn dẹp kiểm tra các thiết bị trong phòng học trước và sau mỗi lịch thuê phòng.</p>
+  <p>5.4. Được quyền yêu cầu bên A bồi hoàn các thiệt hại do hư hỏng trang thiết bị trong phòng học do bên B cung cấp nếu những hư hỏng này do bên A hoặc học viên của bên A gây ra trong thời gian bên A sử dụng.</p>
+  <p>5.5. Có quyền hủy hợp đồng với bên A nếu phát hiện bên A có dấu hiệu hoặc cố tình vi phạm các nội dung trong việc thuê phòng để làm các việc ngoài mục đích sử dụng đã đăng ký hoặc thuộc diện cấm hoặc không được phép của các cơ quan nhà nước.</p>
+  <p><b>ĐIỀU 6: ĐIỀU KHOẢN CHUNG</b></p>
+  <p>6.1. Hai bên cam kết sử dụng đúng các thỏa thuận trong hợp đồng, những điều khoản không có trong hợp đồng được thực hiện theo các luật trong Hợp đồng này và các văn bản hướng dẫn của các luật đó.</p>
+  <p>6.2. Nếu phát sinh tranh chấp về hợp đồng, các bên sẽ tiến hành thương lượng, thỏa thuận. Nếu không thỏa thuận được, một trong các bên có quyền khởi kiện theo quy định của pháp luật.</p>
+  <p>6.3. Hợp đồng này được lập thành 04 bản, các bản có nội dung và giá trị pháp lý như nhau, mỗi bên giữ 02 bản. Hợp đồng sẽ có hiệu lực kể từ ngày đến lịch thuê phòng của bên A.</p>
 `;
 
 
@@ -331,7 +353,8 @@ onMounted(() => {
 
     <!-- Popup tạo hợp đồng -->
     <div v-if="showHopDongForm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div class="bg-white p-6 rounded shadow-lg w-96 ">
+      <!-- <div class="bg-white p-6 rounded shadow-lg w-96 "> -->
+      <div class="bg-white p-6 rounded shadow-lg w-[800px] max-h-screen overflow-y-auto">
         <h2 class="text-lg font-bold mb-4">
           Tạo hợp đồng cho phiếu {{ selectedPhieuForHopDong?.id }}
         </h2>
@@ -378,14 +401,16 @@ onMounted(() => {
         <h2 class="text-center font-bold text-lg mt-4 underline">
           HỢP ĐỒNG CUNG CẤP DỊCH VỤ
         </h2>
+        <div class="text-center">
+          <h3 class="font-semibold mt-6">Số: .../HĐDV</h3>
+        </div>
 
         <!-- Căn cứ -->
         <div class="mt-4">
           <p>- Căn cứ Bộ luật dân sự được Quốc hội thông qua ngày 24 tháng 11 năm 2015.</p>
           <p>- Căn cứ Văn bản hợp nhất 17/VBHN-VPQH năm 2019 Luật Thương mại do Văn phòng Quốc hội ban hành.</p>
-          <p>- Căn cứ Luật Công nghệ thông tin số 67/2006/QH11 ban hành ngày 29/06/2006.</p>
-          <p>- Căn cứ Luật Viễn thông số 41/2009/QH12 ban hành ngày 23/11/2009.</p>
           <p>- Xem xét yêu cầu của khách hàng và khả năng cung cấp dịch vụ của Công ty TNHH thương mại và dịch vụ giáo dục và đào tạo Tinh Hoa Việt.</p>
+          <p>- Căn cứ vào nhu cầu thực tế của 2 bên</p>
         </div>
 
         <!-- Bảng thông tin -->
@@ -426,6 +451,7 @@ onMounted(() => {
           <tr>
             <td class="border px-2 py-1">Chức vụ</td>
             <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien?.chuc_vu }}</td>
+             <!-- <td class="border px-2 py-1">{{nhanVienList.find(nv => nv.id === hopDongDetail?.nhan_vien?.id)?.chucvu?.ten_chucvu}}</td> -->
           </tr>
           <tr>
             <td class="border px-2 py-1">Địa chỉ</td>
@@ -440,8 +466,11 @@ onMounted(() => {
             <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien?.email }}</td>
           </tr>
         </table>
-
-         <p class="mt-2 font-semibold">Thông tin dịch vụ:</p>
+        <!-- Điều khoản -->
+        <!-- <h3 class="font-semibold mt-4">Điều khoản hợp đồng:</h3> -->
+         <h3 class="font-semibold mt-4">Hai bên đều thống nhất ký kết hợp đồng với những điều khoản sau đây:</h3>
+        <p><b>Điều 1: Nội dung hợp đồng.</b></p>
+        <p>Bên B cung cấp các dịch vụ thiết bị và phòng học tại số 74 TDP số 4, Phường Ngọc Xuyên, Thành Phố Hải Phòng theo yêu cầu của bên A với chi tiết như sau:</p>
         <table class="table-auto border border-black w-full text-sm mb-4">
           <tr>
             <td class="border px-2 py-1 w-1/3">Tên phòng</td>
@@ -466,7 +495,7 @@ onMounted(() => {
             <td class="border px-2 py-1">Thời hạn thuê</td>
             <td class="border px-2 py-1">{{ hopDongDetail?.phong?.thoi_han }}</td>
           </tr>
-          <tr>
+          <!-- <tr>
             <td class="border px-2 py-1">Thành tiền:</td>
             <td class="border px-2 py-1">
                 {{
@@ -476,12 +505,19 @@ onMounted(() => {
                   }).format(hopDongDetail?.hop_dong?.thanh_tien)
                 }}
             </td>
-          </tr>
+          </tr> -->
         </table>
+        <p><b>Điều 2: Giá trị thanh toán</b></p>
+        <p>- Giá trị thanh toán: {{
+          new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND"
+          }).format(hopDongDetail?.hop_dong?.thanh_tien ?? 0)
+        }}</p>
 
-        <!-- Điều khoản -->
-        <h3 class="font-semibold mt-4">Điều khoản hợp đồng:</h3>
         <div v-html="hopDongDetail?.hop_dong?.dieu_khoan"></div>
+
+        
         <!-- Chữ ký -->
         <div class="flex justify-between mt-10">
           <div class="text-center w-1/2">

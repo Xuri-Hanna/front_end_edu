@@ -48,3 +48,8 @@ input:active, input:focus, input:blur {
 .sidebar.is-active {
   left: 280px;
 }
+
+.page-break-avoid {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
