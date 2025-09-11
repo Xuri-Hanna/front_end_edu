@@ -265,7 +265,7 @@ const downloadChart = async () => {
   link.href = canvas.toDataURL("image/png")
   link.click()
 }
-//Đổi màu cột ở đây
+//Đổi màu cột 
 const chartDataThuePhong = computed(() => ({
   labels: doanhThuThuePhong.value.map(item => item.thang),
   datasets: [

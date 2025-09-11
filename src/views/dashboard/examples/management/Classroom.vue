@@ -69,7 +69,7 @@ const columns: ColumnDef<any>[] = [
     header: 'Môn học',
     cell: ({ row }) => {
       const mon = monHocList.value.find(m => m.id === row.original.mon_hoc_id);
-      return mon ? mon.mon_hoc : 'N/A';
+      return mon ? mon.mon_hoc + ' ' + mon.khoi_lop : 'N/A';
     }
   },
   {
@@ -570,7 +570,7 @@ onMounted(() => {
               <label>Môn học</label>
               <select v-model="form.mon_hoc_id" class="border rounded p-2">
                 <option value="">-- Chọn môn --</option>
-                <option v-for="m in monHocList" :key="m.id" :value="m.id">{{ m.mon_hoc }}</option>
+                <option v-for="m in monHocList" :key="m.id" :value="m.id">{{ m.mon_hoc }} - {{ m.khoi_lop }}</option>
               </select>
               <small v-if="errors.mon_hoc_id" class="text-red-500">{{ errors.mon_hoc_id }}</small>
             </div>

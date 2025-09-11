@@ -324,7 +324,7 @@ onMounted(() => {
                 <tbody>
                   <tr v-for="(mon, index) in topMonHoc" :key="mon.id">
                     <td class="p-1">{{ index + 1 }}</td>
-                    <td class="p-1">{{ mon.mon}}</td>
+                    <td class="p-1">{{ mon.mon}} - {{ mon.khoi }} </td>
                     <td class="p-1">{{ mon.so_lop }}</td>
                   </tr>
                 </tbody>
