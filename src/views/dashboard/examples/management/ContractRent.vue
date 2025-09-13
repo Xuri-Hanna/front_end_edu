@@ -127,7 +127,8 @@ const selectedPhieuForHopDong = ref<any>(null);
 
 const hopDongForm = ref({
   dieu_khoan: '',
-  ngay_lap: ''
+  ngay_lap: '',
+  nhan_vien_id: ''
 });
 
 // ========= Điều khoản mặc định =========
@@ -174,6 +175,7 @@ const openCreateHopDong = async (phieu: any) => {
   }
   selectedPhieuForHopDong.value = phieu;
   hopDongForm.value = {
+     nhan_vien_id: '',
      dieu_khoan: DEFAULT_DIEU_KHOAN ,
      ngay_lap: ''
     };
@@ -186,7 +188,10 @@ const submitHopDong = async () => {
     await axios.post('http://127.0.0.1:8000/api/hop_dong_thue_phongs', {
       phieu_thue_phong_id: selectedPhieuForHopDong.value.id,
       dieu_khoan: hopDongForm.value.dieu_khoan,
-      ngay_lap: hopDongForm.value.ngay_lap
+      ngay_lap: hopDongForm.value.ngay_lap,
+      //thêm ở đây
+      nhan_vien_id: hopDongForm.value.nhan_vien_id
+
     });
     showHopDongForm.value = false;
     triggerNotification('Tạo hợp đồng thành công!', 'success');
@@ -308,7 +313,10 @@ const xemCongNo = async (id: string) => {
   }
 };
 
-
+// Lấy thông tin nhân viên đang chọn
+const selectedNhanVien = computed(() => {
+  return nhanVienList.value.find(nv => nv.id === hopDongForm.value.nhan_vien_id);
+});
 
 // ================== Mounted ==================
 onMounted(() => {
@@ -358,6 +366,47 @@ onMounted(() => {
         <h2 class="text-lg font-bold mb-4">
           Tạo hợp đồng cho phiếu {{ selectedPhieuForHopDong?.id }}
         </h2>
+
+        <!-- Người đại diện -->
+        <div class="grid gap-y-2 mb-4">
+          <label for="nhanvien">Người lập hợp đồng (Bên B)</label>
+          <select
+            id="nhanvien"
+            v-model="hopDongForm.nhan_vien_id"
+            class="border rounded px-2 py-1"
+          >
+            <option disabled value="">-- Chọn nhân viên --</option>
+            <option v-for="nv in nhanVienList" :key="nv.id" :value="nv.id">
+              {{ nv.ho_ten }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Hiển thị thông tin tách riêng -->
+        <div v-if="selectedNhanVien" class="grid gap-y-2 mb-4">
+          <div>
+            <label>Họ tên:</label>
+            <input type="text" :value="selectedNhanVien.ho_ten" readonly class="border rounded px-2 py-1 w-full"/>
+          </div>
+          <div>
+            <label>Chức vụ:</label>
+            <input type="text" :value="selectedNhanVien.chuc_vu?.ten_chuc_vu" readonly class="border rounded px-2 py-1 w-full"/>
+          </div>
+          <div>
+            <label>Địa chỉ:</label>
+            <input type="text" :value="selectedNhanVien.dia_chi" readonly class="border rounded px-2 py-1 w-full"/>
+          </div>
+          <div>
+            <label>Số điện thoại:</label>
+            <input type="text" :value="selectedNhanVien.so_dien_thoai" readonly class="border rounded px-2 py-1 w-full"/>
+          </div>
+          <div>
+            <label>Email:</label>
+            <input type="text" :value="selectedNhanVien.email" readonly class="border rounded px-2 py-1 w-full"/>
+          </div>
+        </div>
+
+
         <div class="grid gap-y-2 mb-4 ">
           <label>Điều khoản</label>
           <QuillEditor
@@ -446,24 +495,24 @@ onMounted(() => {
           </tr>
           <tr>
             <td class="border px-2 py-1">Người đại diện</td>
-            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien?.ho_ten }}</td>
+            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien_hd?.ho_ten }}</td>
           </tr>
           <tr>
             <td class="border px-2 py-1">Chức vụ</td>
-            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien?.chuc_vu }}</td>
-             <!-- <td class="border px-2 py-1">{{nhanVienList.find(nv => nv.id === hopDongDetail?.nhan_vien?.id)?.chucvu?.ten_chucvu}}</td> -->
+            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien_hd?.chuc_vu }}</td>
+
           </tr>
           <tr>
             <td class="border px-2 py-1">Địa chỉ</td>
-            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien?.dia_chi }}</td>
+            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien_hd?.dia_chi }}</td>
           </tr>
           <tr>
             <td class="border px-2 py-1">Điện thoại</td>
-            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien?.dien_thoai }}</td>
+            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien_hd?.dien_thoai }}</td>
           </tr>
           <tr>
             <td class="border px-2 py-1">Email</td>
-            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien?.email }}</td>
+            <td class="border px-2 py-1">{{ hopDongDetail?.nhan_vien_hd?.email }}</td>
           </tr>
         </table>
         <!-- Điều khoản -->
