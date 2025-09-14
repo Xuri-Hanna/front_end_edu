@@ -4,6 +4,8 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
+import { Eye, Pencil, Trash2 } from 'lucide-vue-next';
+
 
 // Danh sách chức vụ
 const chucVuList = ref([]);
@@ -39,14 +41,28 @@ const columns: ColumnDef<any>[] = [
   { accessorKey: 'ten_chuc_vu', header: 'Tên chức vụ' },
   { accessorKey: 'mo_ta', header: 'Mô tả' },
   {
-    accessorKey: 'actions',
-    header: 'Hành động',
-    cell: ({ row }) =>
-      h('div', { class: 'flex gap-2' }, [
-        h(Button, { variant: 'outline', onClick: () => editChucVu(row.original) }, 'Sửa'),
-        h(Button, { variant: 'destructive', onClick: () => deleteChucVu(row.original.id) }, 'Xóa')
-      ])
-  }
+  accessorKey: 'actions',
+  header: 'Hành động',
+  cell: ({ row }) =>
+    h('div', { class: 'flex gap-3' }, [
+      h(
+        'button',
+        {
+          class: 'text-blue-600 hover:text-blue-800',
+          onClick: () => editChucVu(row.original)
+        },
+        [h(Pencil, { size: 18 })]
+      ),
+      h(
+        'button',
+        {
+          class: 'text-red-600 hover:text-red-800',
+          onClick: () => deleteChucVu(row.original.id)
+        },
+        [h(Trash2, { size: 18 })]
+      )
+    ])
+}
 ];
 
 // Kiểu dữ liệu chức vụ

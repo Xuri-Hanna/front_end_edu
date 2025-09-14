@@ -4,6 +4,7 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
+import { Pencil, Trash2 } from 'lucide-vue-next';
 
 // Danh sách học sinh
 const hocSinhList = ref([]);
@@ -51,9 +52,26 @@ const columns: ColumnDef<any>[] = [
     accessorKey: 'actions',
     header: 'Hành động',
     cell: ({ row }) =>
-      h('div', { class: 'flex gap-2' }, [
-        h(Button, { variant: 'outline', onClick: () => editHocSinh(row.original) }, 'Sửa'),
-        h(Button, { variant: 'destructive', onClick: () => deleteHocSinh(row.original.id) }, 'Xóa')
+      h('div', { class: 'flex gap-3' }, [
+        // Sửa học sinh
+        h(
+          'button',
+          {
+            class: 'text-blue-600 hover:text-blue-800',
+            onClick: () => editHocSinh(row.original)
+          },
+          [h(Pencil, { size: 18 })]
+        ),
+
+        // Xóa học sinh
+        h(
+          'button',
+          {
+            class: 'text-red-600 hover:text-red-800',
+            onClick: () => deleteHocSinh(row.original.id)
+          },
+          [h(Trash2, { size: 18 })]
+        )
       ])
   }
 ];

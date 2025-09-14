@@ -4,6 +4,8 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
+import { Eye, Pencil, Trash2 } from 'lucide-vue-next';
+
 
 // Danh sách đơn vị công tác
 const donViList = ref([]);
@@ -24,13 +26,27 @@ const columns: ColumnDef<any>[] = [
   { accessorKey: 'so_dien_thoai', header: 'Số điện thoại' },
   { accessorKey: 'email', header: 'Email' },
   {
-    accessorKey: 'actions',
-    header: 'Hành động',
-    cell: ({ row }) =>
-      h('div', { class: 'flex gap-2' }, [
-        h(Button, { variant: 'outline', onClick: () => editDonVi(row.original) }, 'Sửa'),
-        h(Button, { variant: 'destructive', onClick: () => deleteDonVi(row.original.id) }, 'Xóa')
-      ])
+  accessorKey: 'actions',
+  header: 'Hành động',
+  cell: ({ row }) =>
+    h('div', { class: 'flex gap-3' }, [
+      h(
+        'button',
+        {
+          class: 'text-blue-600 hover:text-blue-800',
+          onClick: () => editDonVi(row.original) 
+        },
+        [h(Pencil, { size: 18 })]
+      ),
+      h(
+        'button',
+        {
+          class: 'text-red-600 hover:text-red-800',
+          onClick: () => deleteDonVi(row.original.id)
+        },
+        [h(Trash2, { size: 18 })]
+      )
+    ])
   }
 ];
 

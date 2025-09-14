@@ -4,6 +4,7 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
+import { Pencil, Trash2 } from 'lucide-vue-next';
 
 // Danh sách tài khoản
 const taiKhoanList = ref([]);
@@ -54,8 +55,22 @@ const columns: ColumnDef<any>[] = [
     header: 'Hành động',
     cell: ({ row }) =>
       h('div', { class: 'flex gap-2' }, [
-        h(Button, { variant: 'outline', onClick: () => editTaiKhoan(row.original) }, 'Sửa'),
-        h(Button, { variant: 'destructive', onClick: () => deleteTaiKhoan(row.original.ID) }, 'Xóa')
+       h(
+          'button',
+          {
+            class: 'text-blue-600 hover:text-blue-800',
+            onClick: () => editTaiKhoan(row.original)
+          },
+          [h(Pencil, { size: 18 })]
+        ),
+       h(
+          'button',
+          {
+            class: 'text-red-600 hover:text-red-800',
+            onClick: () => deleteTaiKhoan(row.original.ID)
+          },
+          [h(Trash2, { size: 18 })]
+        )
       ])
   }
 ];
