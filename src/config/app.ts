@@ -14,110 +14,9 @@ interface SubMenu {
 }
 export const SIDEBAR_EXPAND_WIDTH = 280;
 export const SIDEBAR_COLLAPSED_WIDTH = 72;
-
-// export const APP_MENU: Record<string, Menu> = {
-//   system: {
-//     name: 'Hệ thống',
-//     icon: 'Home',
-//     children: [
-//       {
-//         title: 'Người dùng',
-//         icon: 'User',
-//         path: '',
-//       },
-//       {
-//         title: 'Quyền',
-//         icon: 'UserPlus',
-//         path: '',
-//       },
-//       {
-//         title: 'Phân Quyền',
-//         icon: 'UserCog',
-//         path: '',
-//       },
-
-//     ],
-//   },
-//   service: {
-//     name: 'Dịch vụ',
-//     icon: 'Package',
-//     children: [
-//       {
-//         title: 'VPS',
-//         icon: 'Waypoints',
-//         path: '',
-//       },
-//       {
-//         title: 'Hosting',
-//         icon: 'Computer',
-//         path: '',
-//       },
-//       {
-//         title: 'Miền',
-//         icon: 'MemoryStick',
-//         path: '',
-//       },
-//     ]
-//   },
-
-//   account: {
-//     name: 'Tài khoản',
-//     icon: 'UserCog',
-//     children: [
-//       {
-//         title: 'Tài khoản hosting',
-//         icon: 'BetweenHorizontalEnd',
-//         path: ''
-//       },
-//       {
-//         title: 'Tài khoản domain',
-//         icon: 'BetweenHorizontalEnd',
-//         path: ''
-//       },
-//       {
-//         title: 'Tài khoản vps',
-//         icon: 'BetweenHorizontalEnd',
-//         path: ''
-//       },
-
-//     ]
-//   },
-//   management: {
-//     name: 'Quản lý',
-//     icon: 'AppWindow',
-//     children: [
-//       {
-//         title: 'Khách hàng',
-//         icon: 'BookUser',
-//         path: '',
-//       },
-//       {
-//         title: 'Hóa đơn',
-//         icon: 'ReceiptText',
-//         path: '',
-//       },
-//       {
-//         title: 'Đơn hàng',
-//         icon: 'ReceiptText',
-//         path: '',
-//       },
-//       {
-//         title: 'Hợp đồng',
-//         icon: 'ReceiptText',
-//         path: '',
-//       },
-//       {
-//         title: 'Mã giảm giá',
-//         icon: 'ReceiptText',
-//         path: '',
-//       },
-//     ],
-//   },
-// };
-
 export const ADMIN_MENU: Record<string, Menu> = {
   account: {
-    name: 'Tài khoản',
+    name: 'Hệ thống',
     icon: 'UserCog',
     children: [
       {
@@ -131,11 +30,6 @@ export const ADMIN_MENU: Record<string, Menu> = {
         path: 'nhan_vien'
       },
       {
-        title: 'Giáo viên',
-        icon: 'User',
-        path: 'giao_vien'
-      },
-      {
         title: 'Chức vụ',
         icon: 'BetweenHorizontalEnd',
         path: 'chuc_vu'
@@ -145,7 +39,7 @@ export const ADMIN_MENU: Record<string, Menu> = {
   },
 
   management_all: {
-    name: 'Quản lý chung',
+    name: 'Quản lý giáo viên',
     icon: 'UserCog',
     children: [
 
@@ -154,11 +48,16 @@ export const ADMIN_MENU: Record<string, Menu> = {
         icon: 'User',
         path: 'don_vi_cong_tac'
       },
+      {
+        title: 'Giáo viên',
+        icon: 'User',
+        path: 'giao_vien'
+      },
 
     ]
   },
   management: {
-    name: 'Quản lý',
+    name: 'Quản lý giáo dục',
     icon: 'UserCog',
     children: [
       {
@@ -187,20 +86,20 @@ export const ADMIN_MENU: Record<string, Menu> = {
         path: 'mon_hoc'
       },
       {
-        title: 'Người thuê phòng',
-        icon: 'BetweenHorizontalEnd',
-        path: 'nguoi_thue_phong'
+        title: 'Hóa đơn học phí',
+        icon: 'ReceiptText',
+        path: 'hoa_don_hoc_phi'
       },
     ]
   },
   service: {
-    name: 'Thanh toán',
+    name: 'Quản lý thuê phòng',
     icon: 'UserCog',
     children: [
       {
-        title: 'Hóa đơn học phí',
-        icon: 'ReceiptText',
-        path: 'hoa_don_hoc_phi'
+        title: 'Người thuê phòng',
+        icon: 'BetweenHorizontalEnd',
+        path: 'nguoi_thue_phong'
       },
       {
         title: 'Hóa đơn thuê phòng',

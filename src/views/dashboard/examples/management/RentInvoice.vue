@@ -251,18 +251,6 @@ onMounted(() => {
               </div>
               <div>
                 <p><b>Tổng tiền:</b> {{ formatCurrency(hd.tong_tien) }}</p>
-                <!-- <p><b>Trạng thái:</b>
-                  <span :class="hd.trang_thai === 'Chưa thanh toán' ? 'text-red-600' : 'text-green-600'">
-                    {{ hd.trang_thai }}
-                  </span>
-                </p> -->
-                <p><b>Trạng thái:</b>
-                  <span :class="hd.hop_dong_trang_thai === 'Đã thanh toán' ? 'text-green-600'
-                            : hd.hop_dong_trang_thai === 'Chưa thanh toán' ? 'text-red-600'
-                            : 'text-gray-600'">
-                    {{ hd.hop_dong_trang_thai }}
-                  </span>
-                </p>
               </div>
             </div>
             <div class="mt-6 text-sm">
