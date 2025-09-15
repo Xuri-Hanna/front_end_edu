@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import { Sun, Cloud, Moon } from "lucide-vue-next";
 
 const giaoVienList = ref<any[]>([]); // danh sách giáo viên
 const lichDayTheoGV = ref<Record<string, any[]>>({}); // lịch dạy theo gv
@@ -49,13 +50,56 @@ const formatDate = (dateStr: string | null) => {
   const year = d.getFullYear();
   return `${day}/${month}/${year}`;
 };
+// State
+const thoiGianHocList = ref<any[]>([]);
+
+// Hàm gọi API lấy dữ liệu
+const fetchData = async () => {
+  try {
+    const res = await axios.get("http://127.0.0.1:8000/api/thoi_gian_hocs");
+    thoiGianHocList.value = res.data; // giả sử backend trả về array
+  } catch (err) {
+    console.error("Lỗi khi fetch dữ liệu:", err);
+  }
+};
+
+// Map icon theo buổi
+const getIcon = (buoi: string) => {
+  if (buoi.toLowerCase().includes("sáng")) return Sun;
+  if (buoi.toLowerCase().includes("chiều")) return Cloud;
+  if (buoi.toLowerCase().includes("tối")) return Moon;
+  return Sun;
+};
+
 
 onMounted(async () => {
+  await fetchData();
   await fetchGiaoVien();
 });
 </script>
 
 <template>
+ <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+    <div
+      v-for="item in thoiGianHocList"
+      :key="item.ID"
+      class="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-md"
+    >
+      <!-- Icon -->
+      <component
+        :is="getIcon(item.buoi)"
+        class="w-10 h-10 text-yellow-500"
+      />
+
+      <!-- Nội dung -->
+      <div>
+        <p class="text-lg font-semibold">{{ item.buoi }}</p>
+        <p class="text-sm text-gray-600">
+          {{ item.gio_bat_dau }} - {{ item.gio_ket_thuc }}
+        </p>
+      </div>
+    </div>
+  </div>
   <div class="p-6 space-y-6">
     <h2 class="text-2xl font-bold mb-4">📅 Lịch dạy của giáo viên</h2>
 

@@ -61,6 +61,11 @@ export const ADMIN_MENU: Record<string, Menu> = {
     icon: 'UserCog',
     children: [
       {
+        title: 'Thời gian học',
+        icon: 'BetweenHorizontalEnd',
+        path: 'thoi_gian_hoc'
+      },
+      {
         title: 'Lớp học',
         icon: 'BetweenHorizontalEnd',
         path: 'lop_hoc'

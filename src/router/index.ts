@@ -179,6 +179,14 @@ const router = createRouter({
             title: 'Thống kê tài chính',
           } as RouteMeta & IRouteMeta
         },
+        {
+          path: 'thoi_gian_hoc',
+          name: 'admin_thoi_gian_hoc',
+          component: () => import('@/views/dashboard/examples/management/Time.vue'),
+          meta: {
+            title: 'Thống kê tài chính',
+          } as RouteMeta & IRouteMeta
+        },
       ]
     },
     {
