@@ -224,10 +224,19 @@ const validateForm = () => {
   return isValid;
 };
 
+const keyword = ref('');
+
 // Fetch dữ liệu
 const fetchLopHoc = async () => {
-  const res = await axios.get('http://127.0.0.1:8000/api/lop_hocs');
+  // const res = await axios.get('http://127.0.0.1:8000/api/lop_hocs');
+  // lopHocList.value = res.data;
+  let url = 'http://127.0.0.1:8000/api/lop_hocs';
+  if (keyword.value) {
+    url = `http://127.0.0.1:8000/api/lop_hocs/search?keyword=${keyword.value}`;
+  }
+  const res = await axios.get(url);
   lopHocList.value = res.data;
+
 };
 const fetchMonHoc = async () => {
   const res = await axios.get('http://127.0.0.1:8000/api/mon_hocs');
@@ -641,6 +650,17 @@ onMounted(() => {
 
     <div v-if="successMessage" class="mb-4 text-green-600 font-semibold">
       {{ successMessage }}
+    </div>
+
+    <div class="mb-4 flex gap-4">
+      <Input
+        type="text"
+        v-model="keyword"
+        placeholder="Tìm kiếm theo tên lớp học"
+        @input="fetchLopHoc"
+        class="flex-1"
+      />
+      <Button type="button" variant="outline" @click="fetchLopHoc">Tìm kiếm</Button>
     </div>
 
     <!-- Bộ lọc -->
