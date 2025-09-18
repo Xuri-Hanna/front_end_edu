@@ -62,7 +62,7 @@ const columns: ColumnDef<any>[] = [
         [h(Trash2, { size: 18 })]
       )
     ])
-}
+  }
 ];
 
 // Kiểu dữ liệu chức vụ

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/button/Button.vue';
-import { Pencil, Trash2 } from 'lucide-vue-next';
+import { Eye, Pencil, Trash2 } from 'lucide-vue-next';
 
 // Danh sách học sinh
 const hocSinhList = ref([]);
@@ -38,6 +38,9 @@ const closeForm = () => {
   resetForm();
 };
 
+// Lớp học của học sinh
+const lopHocList = ref<{dangHoc: any[], sapMo: any[]}>({ dangHoc: [], sapMo: [] });
+const showLopHocPopup = ref(false);
 
 // Định nghĩa cột bảng
 const columns: ColumnDef<any>[] = [
@@ -71,7 +74,15 @@ const columns: ColumnDef<any>[] = [
             onClick: () => deleteHocSinh(row.original.id)
           },
           [h(Trash2, { size: 18 })]
-        )
+        ),
+        h(
+          'button',
+          {
+            class: 'text-gray-600 hover:text-gray-800',
+            onClick: () => xemLopHoc(row.original.id)
+          },
+          [h(Eye, { size: 18 })]
+        ),
       ])
   }
 ];
@@ -107,6 +118,22 @@ const fetchHocSinh = async () => {
   }
   const response = await axios.get(url);
   hocSinhList.value = response.data;
+};
+/// Xem lớp học của học sinh
+const xemLopHoc = async (hocSinhId: string) => {
+  try {
+    const res = await axios.get(`http://127.0.0.1:8000/api/lop_hoc/${hocSinhId}/hoc_sinh`);
+    const allLopHoc = res.data;
+    console.log(allLopHoc);
+    // Chia theo trạng thái
+    lopHocList.value = {
+      dangHoc: allLopHoc.filter((lop: any) => lop.trang_thai === 'Đang học'),
+      sapMo: allLopHoc.filter((lop: any) => lop.trang_thai === 'Sắp mở'),
+    };
+    showLopHocPopup.value = true;
+  } catch (err) {
+    console.error('Lỗi fetch lớp học:', err);
+  }
 };
 
 
@@ -229,48 +256,34 @@ onMounted(fetchHocSinh);
 <template>
   <div>
     <h1 class="text-lg font-bold mb-4">Quản lý Học sinh</h1>
-    <!-- <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
-      <div>
-        <label>Họ tên</label>
-        <Input type="text" v-model="form.ho_ten" />
-        <small v-if="errors.ho_ten" class="text-red-500">{{ errors.ho_ten }}</small>
-      </div>
-      <div>
-        <label>Số điện thoại</label>
-        <Input type="text" v-model="form.so_dien_thoai" />
-        <small v-if="errors.so_dien_thoai" class="text-red-500">{{ errors.so_dien_thoai }}</small>
-      </div>
-      <div>
-        <label>Giới tính</label>
-        <Input type="text" v-model="form.gioi_tinh" placeholder="Nam/Nữ" />
-        <small v-if="errors.gioi_tinh" class="text-red-500">{{ errors.gioi_tinh }}</small>
-      </div>
-      <div>
-        <label>Ngày sinh</label>
-        <Input type="date" v-model="form.ngay_sinh" />
-        <small v-if="errors.ngay_sinh" class="text-red-500">{{ errors.ngay_sinh }}</small>
-      </div>
-      <div>
-        <label>Địa chỉ</label>
-        <Input type="text" v-model="form.dia_chi" />
-        <small v-if="errors.dia_chi" class="text-red-500">{{ errors.dia_chi }}</small>
-      </div>
-      <div>
-        <label>SĐT Phụ huynh</label>
-        <Input type="text" v-model="form.so_phu_huynh" />
-        <small v-if="errors.so_phu_huynh" class="text-red-500">{{ errors.so_phu_huynh }}</small>
-      </div>
-      <div class="col-span-2 flex gap-2 mt-2">
-        <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Học sinh</Button>
-        <Button type="button" variant="outline" @click="resetForm">Reset</Button>
-      </div>
-    </form> -->
-
     <!-- Nút mở form -->
     <div class="mb-4">
       <Button @click="openAddForm">+ Thêm học sinh</Button>
     </div>
+    <!-- Popup Lớp học -->
+    <div v-if="showLopHocPopup" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-[600px] max-h-[80vh] overflow-y-auto">
+        <h2 class="font-bold text-lg mb-4">📚 Lớp học của học sinh</h2>
 
+        <h3 class="font-semibold text-blue-600 mb-2">Đang học</h3>
+        <ul class="list-disc pl-6 mb-4">
+          <li v-for="lop in lopHocList.dangHoc" :key="lop.id">
+            {{ lop.ten_lop }} 
+          </li>
+        </ul>
+
+        <h3 class="font-semibold text-orange-600 mb-2">Sắp mở</h3>
+        <ul class="list-disc pl-6 mb-4">
+          <li v-for="lop in lopHocList.sapMo" :key="lop.id">
+            {{ lop.ten_lop }} 
+          </li>
+        </ul>
+
+        <div class="flex justify-end gap-2 mt-4">
+          <Button variant="outline" @click="showLopHocPopup = false">Đóng</Button>
+        </div>
+      </div>
+    </div>
     <!-- Form popup -->
     <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 w-[600px]">

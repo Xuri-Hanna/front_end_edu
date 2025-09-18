@@ -431,39 +431,6 @@ onMounted(async () => {
       <!-- View 2: Danh sách + form -->
       <div class="w-full flex-shrink-0 pl-4">
         <h1 class="text-lg font-bold mb-4">Quản lý Phòng học</h1>
-
-        <!-- Form -->
-        <!-- <form @submit.prevent="submitForm" class="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <label>Số phòng</label>
-            <Input type="text" v-model="form.so_phong" />
-            <small v-if="errors.so_phong" class="text-red-500">{{ errors.so_phong }}</small>
-          </div>
-          <div>
-            <label>Vị trí phòng</label>
-            <Input type="text" v-model="form.vi_tri_phong" />
-            <small v-if="errors.vi_tri_phong" class="text-red-500">{{ errors.vi_tri_phong }}</small>
-          </div>
-          <div>
-            <label>Số chỗ ngồi</label>
-            <Input type="number" v-model.number="form.so_cho_ngoi" />
-            <small v-if="errors.so_cho_ngoi" class="text-red-500">{{ errors.so_cho_ngoi }}</small>
-          </div>
-          <div>
-            <label>Giá phòng</label>
-            <Input type="number" v-model.number="form.gia_phong" />
-            <small v-if="errors.gia_phong" class="text-red-500">{{ errors.gia_phong }}</small>
-          </div>
-          <div>
-            <label>Ghi chú</label>
-            <Input type="text" v-model="form.ghi_chu" />
-          </div>
-          <div class="col-span-2 flex gap-2 mt-2">
-            <Button type="submit">{{ form.id ? 'Cập nhật' : 'Thêm' }} Phòng học</Button>
-            <Button type="button" variant="outline" @click="resetForm">Reset</Button>
-          </div>
-        </form> -->
-
         <!-- Nút mở form -->
         <div class="mb-4">
           <Button @click="openAddForm">+ Thêm phòng học </Button>

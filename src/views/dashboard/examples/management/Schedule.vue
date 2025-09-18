@@ -71,7 +71,6 @@ const getIcon = (buoi: string) => {
   return Sun;
 };
 
-
 onMounted(async () => {
   await fetchData();
   await fetchGiaoVien();
