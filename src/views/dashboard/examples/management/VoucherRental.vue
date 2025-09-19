@@ -225,8 +225,19 @@ const submitForm = async () => {
     //resetForm();
     fetchPhieu();
     closeForm();
-  } catch (err) {
-    console.error(err);
+  } 
+  // catch (err) {
+  //   console.error(err);
+  // }
+  catch (err: any) {
+    if (err.response && err.response.status === 422) {
+      const validationErrors = err.response.data.errors;
+      for (const key in validationErrors) {
+        errors[key] = validationErrors[key][0];
+      }
+    } else {
+      console.error('Lỗi không xác định:', err);
+    }
   }
 };
 
@@ -426,14 +437,17 @@ onMounted(() => {
           <div>
             <label>Từ ngày</label>
             <Input type="date" v-model="form.tu_ngay" />
+            <small v-if="errors.tu_ngay" class="text-red-500">{{ errors.tu_ngay }}</small>
           </div>
           <div>
             <label>Đến ngày</label>
             <Input type="date" v-model="form.den_ngay" />
+            <small v-if="errors.den_ngay" class="text-red-500">{{ errors.den_ngay }}</small>
           </div>
           <div>
             <label>Ngày lập</label>
             <Input type="date" v-model="form.ngay_lap" />
+            <small v-if="errors.ngay_lap" class="text-red-500">{{ errors.ngay_lap }}</small>
           </div>
           <!-- Lịch thuê -->
           <div class="col-span-2">

@@ -397,6 +397,7 @@ onMounted(() => {
           <div>
             <label>CCCD</label>
             <Input v-model="form.cccd" />
+            <small v-if="errors.cccd" class="text-red-500">{{ errors.cccd }}</small>
           </div>
           <div>
             <label>Địa chỉ</label>
@@ -405,10 +406,12 @@ onMounted(() => {
           <div>
             <label>SĐT</label>
             <Input v-model="form.so_dien_thoai" />
+            <small v-if="errors.so_dien_thoai" class="text-red-500">{{ errors.so_dien_thoai }}</small>
           </div>
           <div>
             <label>Email</label>
             <Input v-model="form.email" />
+            <small v-if="errors.email" class="text-red-500">{{ errors.email }}</small>
           </div>
           <div>
             <label>Chức vụ</label>

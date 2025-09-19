@@ -25,6 +25,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import Icon from '@/components/ui/Icon.vue';
+import axios from 'axios'
 
 const route = useRoute()
 const authStore = useAuthStore();
@@ -55,7 +56,25 @@ const menus = computed(() => {
 
 })
 
+const handleLogout = async () => {
+  try {
+    await axios.post('http://localhost:8000/api/logout', {}, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+  } catch (error) {
+    console.error('Lỗi khi gọi API logout:', error)
+  } finally {
+    // Xóa dữ liệu lưu trữ
+    localStorage.removeItem('token')
+    localStorage.removeItem('role')
+    localStorage.removeItem('full_name')
 
+    // Điều hướng về trang login
+    router.push('/login')
+  }
+}
 // const handleNavigate = (path: string) => {
 //   if(route.fullPath.includes(`/cart/${route.params.id}`)){
 //     router.push(route.fullPath.replace(`/cart/${route.params.id}`,"") + `/${path}`);
@@ -201,25 +220,26 @@ const toggleSidebar = () => {
                   </Tooltip>
                 </TooltipProvider>
               </li>
+              
               <li class="flex items-center mb-1 rounded-md">
                 <TooltipProvider :disable-hoverable-content="true">
                   <Tooltip :delay-duration="0">
                     <TooltipTrigger class="w-full">
                       <Toggle
                         class="w-full overflow-x-hidden justify-start duration-150"
-                        @click="$router.push('/login')"
+                        @click="handleLogout"
                       >
                         <span class="flex items-center" :class="store.sidebarExpanded ? 'mr-4' : 'm-0'">
                           <Icon name="LogIn" />
                         </span>
                         <transition name="fade" :duration="300">
-                          <span v-show="store.sidebarExpand">Login</span>
+                          <span v-show="store.sidebarExpand">Đăng xuất</span>
                         </transition>
                       </Toggle>
                     </TooltipTrigger>
                     <template v-if="!store.sidebarExpanded">
                       <TooltipContent side="right" class="bg-white">
-                        <p class="text-sm">Login</p>
+                        <p class="text-sm">Đăng xuất</p>
                       </TooltipContent>
                     </template>
                   </Tooltip>
