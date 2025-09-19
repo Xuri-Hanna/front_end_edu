@@ -151,19 +151,19 @@ const closePasswordForm = () => {
       <!-- <Button variant="outline" class="border-0 p-[6px] w-8 h-8">
         <Bell />
       </Button> -->
-      <Button variant="outline" class="border-0 p-[6px] ml-2 w-8 h-8" @click="toggleMode">
+      <!-- <Button variant="outline" class="border-0 p-[6px] ml-2 w-8 h-8" @click="toggleMode">
         <Sun v-if="store.isDark" />
         <MoonStar v-else />
-      </Button>
+      </Button> -->
       <div class="border-x-[1px] border-gray-300 h-[24px] w-[1px] mx-2"></div>
 
 
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline" class="border-0 flex items-center max-w-[200px] w-full justify-start">
-            <Avatar class="h-8 w-8">
+            <!-- <Avatar class="h-8 w-8">
               <AvatarImage src="https://github.com/radix-vue.png"></AvatarImage>
-            </Avatar>
+            </Avatar> -->
             <span class="ml-2 hidden md:flex justify-start flex-col items-start">
               <p class="mb-0">{{ fullname }}</p>
               <small class="text-xs text-slate-400 font-light">{{ roleLabels[role] || 'Chưa xác định' }}</small>

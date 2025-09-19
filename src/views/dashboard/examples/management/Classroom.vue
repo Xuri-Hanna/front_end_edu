@@ -65,6 +65,14 @@ const columns: ColumnDef<any>[] = [
     }
   },
   {
+    accessorKey: 'ngay_ket_thuc',
+    header: 'Ngày kết thúc',
+    cell: ({ row }) => {
+      const date = row.original.ngay_ket_thuc;
+      return date ? new Date(date).toLocaleDateString('vi-VN') : '';
+    }
+  },
+  {
     accessorKey: 'mon_hoc_id',
     header: 'Môn học',
     cell: ({ row }) => {

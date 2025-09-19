@@ -461,7 +461,7 @@ onMounted(() => {
             :key="index"
             class="text-left"
           >
-            <span class="font-semibold">Tháng {{ item.thang }}:</span>
+            <span class="font-semibold">{{ item.thang }}:</span>
             {{ new Intl.NumberFormat('vi-VN').format(item.doanh_thu) }} đ
           </div>
         </div>

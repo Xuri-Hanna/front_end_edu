@@ -332,7 +332,7 @@ const router = createRouter({
         {
           path: 'lich_day',
           name: 'teacher-lich_day',
-          component: () => import('@/views/dashboard/examples/authTeacher/Schedule.vue'),
+          component: () => import('@/views/dashboard/examples/AuthTeacher/Schedule.vue'),
           meta: {
             title: 'Lịch dạy',
           } as RouteMeta & IRouteMeta,
@@ -340,7 +340,7 @@ const router = createRouter({
         {
           path: 'lop_hoc',
           name: 'teacher-lop_hoc',
-          component: () => import('@/views/dashboard/examples/authTeacher/Classroom.vue'),
+          component: () => import('@/views/dashboard/examples/AuthTeacher/Classroom.vue'),
           meta: {
             title: 'Lớp học',
           } as RouteMeta & IRouteMeta,
